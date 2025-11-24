@@ -1,9 +1,0 @@
-{
-  "expo": {
-    "name": "expo-liquid-glass-native",
-    "plugins": [
-      "./plugins/withLiquidGlass.js"
-    ]
-  }
-}
-

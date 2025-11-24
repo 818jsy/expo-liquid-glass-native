@@ -11,6 +11,9 @@ const ButtonsContentView = requireNativeComponent('ButtonsContentView');
  *   - enabled: boolean - Whether the button is enabled (default: true)
  *   - tint: string - Tint color in hex format (e.g., "#0088FF")
  *   - surfaceColor: string - Surface color in hex format with alpha (e.g., "#FFFFFF4D")
+ *   - blurRadius: number - Blur radius in dp (default: 2)
+ *   - lensX: number - Lens X radius in dp (default: 12)
+ *   - lensY: number - Lens Y radius in dp (default: 24)
  * @param {function} onButtonPress - Callback when a button is pressed: (index: number) => void
  * @param {object} style - Style for the container
  */

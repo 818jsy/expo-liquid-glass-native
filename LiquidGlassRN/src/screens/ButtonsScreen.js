@@ -1,51 +1,63 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import ButtonsContent from '../components/ButtonsContent';
+import { StyleSheet, View, ImageBackground } from 'react-native';
+import LiquidButton from '../components/LiquidButton';
 
 const ButtonsScreen = () => {
-  const buttons = [
-    {
-      title: 'Transparent Liquid Button',
-      enabled: true,
-    },
-    {
-      title: 'Surface Liquid Button',
-      enabled: true,
-      surfaceColor: '#FFFFFF4D',
-    },
-    {
-      title: 'Tinted Liquid Button',
-      enabled: true,
-      tint: '#0088FF',
-    },
-    {
-      title: 'Tinted Liquid Button',
-      enabled: true,
-      tint: '#FF8D28',
-    },
-  ];
-
   return (
-    <View style={styles.container}>
-      <ButtonsContent
-        buttons={buttons}
-        onButtonPress={(index) => {
-          console.log('Button pressed:', index);
-        }}
-        style={styles.content}
-      />
-    </View>
+    <ImageBackground
+      source={require('../../assets/wallpaper_light.webp')}
+      style={styles.container}
+      resizeMode="cover"
+    >
+      <View style={styles.buttonContainer}>
+        <LiquidButton
+          title="Transparent Button"
+          enabled={true}
+          onPress={() => {}}
+          style={styles.button}
+        />
+        <LiquidButton
+          title="Surface Button"
+          enabled={true}
+          surfaceColor="#5FFFFFF"
+          onPress={() => {}}
+          style={styles.button}
+        />
+        <LiquidButton
+          title="Tinted Button"
+          enabled={true}
+          tint="#0088FF"
+          onPress={() => {}}
+          style={styles.button}
+        />
+        <LiquidButton
+          title="Tinted Button"
+          enabled={true}
+          tint="#FF8D28"
+          onPress={() => {}}
+          style={styles.button}
+        />
+      </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
   },
-  content: {
-    flex: 1,
+  buttonContainer: {
+    width: '100%',
+    gap: 16,
+    alignItems: 'center',
+  },
+  button: {
+    minWidth: 200,
+    height: 48,
   },
 });
 
 export default ButtonsScreen;
-

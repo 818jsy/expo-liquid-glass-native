@@ -1,0 +1,15 @@
+{
+  "name": "hermes-compiler",
+  "version": "0.0.0",
+  "description": "Hermes compiler CLI for the Hermes JS engine",
+  "homepage": "https://github.com/facebook/hermes#readme",
+  "bugs": {
+    "url": "https://github.com/facebook/hermes/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/facebook/hermes.git"
+  },
+  "license": "MIT",
+  "main": "index.js"
+}

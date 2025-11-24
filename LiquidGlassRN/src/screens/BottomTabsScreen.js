@@ -8,10 +8,10 @@ const BottomTabsScreen = () => {
   // assets 폴더의 아이콘 사용 예시
   // 방법 1: require()로 assets 폴더의 이미지 사용
   const tabIcons = [
-    require('../../assets/favicon.png'),
-    require('../../assets/favicon.png'),
-    require('../../assets/favicon.png'),
-    require('../../assets/favicon.png'),
+    require('../../assets/apple.png'),
+    require('../../assets/apple.png'),
+    require('../../assets/apple.png'),
+    require('../../assets/apple.png'),
   ];
   // 방법 2: drawable 리소스 이름 사용 (기존 방식)
   // const tabIcons = ['flight_40px', 'flight_40px', 'flight_40px', 'flight_40px'];

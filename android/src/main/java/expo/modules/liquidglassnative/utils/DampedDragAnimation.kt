@@ -136,3 +136,4 @@ class DampedDragAnimation(
         animationScope.launch { velocityAnimation.animateTo(targetVelocity, velocityAnimationSpec) }
     }
 }
+

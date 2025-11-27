@@ -47,3 +47,4 @@ fun RowScope.LiquidBottomTab(
         content = content
     )
 }
+

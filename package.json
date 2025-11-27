@@ -1,6 +1,6 @@
 {
   "name": "expo-liquid-glass-native",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Expo module for LiquidGlass native Android components with beautiful glassmorphism effects",
   "main": "build/index.js",
   "types": "build/index.d.ts",

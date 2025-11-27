@@ -77,3 +77,4 @@ const styles = StyleSheet.create({
 
 export default BottomTabsScreen;
 
+

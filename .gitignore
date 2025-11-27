@@ -6,37 +6,25 @@
 .vscode/
 jsconfig.json
 
-# Xcode
-#
-build/
-*.pbxuser
-!default.pbxuser
-*.mode1v3
-!default.mode1v3
-*.mode2v3
-!default.mode2v3
-*.perspectivev3
-!default.perspectivev3
-xcuserdata
-*.xccheckout
-*.moved-aside
-DerivedData
+# Xcode - Ignore build artifacts only, keep source files
+ios/build/
+ios/DerivedData/
+ios/**/*.xcuserstate
+ios/**/*.xcworkspace
+ios/**/xcuserdata/
+ios/**/*.moved-aside
+ios/**/*.xccheckout
 *.hmap
 *.ipa
-*.xcuserstate
-project.xcworkspace
 
-# Android/IJ
-#
-.classpath
-.cxx
-.gradle
-.idea
-.project
-.settings
-local.properties
-android.iml
-android/app/libs
+# Android - Ignore build artifacts only, keep source files
+android/.gradle/
+android/.cxx/
+android/build/
+android/local.properties
+android/.idea/
+android/*.iml
+android/app/libs/
 android/keystores/debug.keystore
 
 # Cocoapods

@@ -1,73 +1,33 @@
-import { useEvent } from 'expo';
-import ExpoLiquidGlassNative, { ExpoLiquidGlassNativeView } from 'expo-liquid-glass-native';
-import { Button, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, View } from 'react-native';
+import HomeScreen from './src/screens/HomeScreen';
+import ButtonsScreen from './src/screens/ButtonsScreen';
+import BottomTabsScreen from './src/screens/BottomTabsScreen';
 
 export default function App() {
-  const onChangePayload = useEvent(ExpoLiquidGlassNative, 'onChange');
+  const [currentScreen, setCurrentScreen] = useState('Home');
+
+  const handleNavigate = (screen: string) => {
+    setCurrentScreen(screen);
+  };
+
+  const handleBack = () => {
+    setCurrentScreen('Home');
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.container}>
-        <Text style={styles.header}>Module API Example</Text>
-        <Group name="Constants">
-          <Text>{ExpoLiquidGlassNative.PI}</Text>
-        </Group>
-        <Group name="Functions">
-          <Text>{ExpoLiquidGlassNative.hello()}</Text>
-        </Group>
-        <Group name="Async functions">
-          <Button
-            title="Set value"
-            onPress={async () => {
-              await ExpoLiquidGlassNative.setValueAsync('Hello from JS!');
-            }}
-          />
-        </Group>
-        <Group name="Events">
-          <Text>{onChangePayload?.value}</Text>
-        </Group>
-        <Group name="Views">
-          <ExpoLiquidGlassNativeView
-            url="https://www.example.com"
-            onLoad={({ nativeEvent: { url } }) => console.log(`Loaded: ${url}`)}
-            style={styles.view}
-          />
-        </Group>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
-
-function Group(props: { name: string; children: React.ReactNode }) {
-  return (
-    <View style={styles.group}>
-      <Text style={styles.groupHeader}>{props.name}</Text>
-      {props.children}
+    <View style={styles.container}>
+      {currentScreen === 'Home' && <HomeScreen onNavigate={handleNavigate} />}
+      {currentScreen === 'Buttons' && <ButtonsScreen onBack={handleBack} />}
+      {currentScreen === 'BottomTabs' && <BottomTabsScreen onBack={handleBack} />}
+      <StatusBar style="auto" />
     </View>
   );
 }
 
-const styles = {
-  header: {
-    fontSize: 30,
-    margin: 20,
-  },
-  groupHeader: {
-    fontSize: 20,
-    marginBottom: 20,
-  },
-  group: {
-    margin: 20,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
-  },
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#eee',
   },
-  view: {
-    flex: 1,
-    height: 200,
-  },
-};
+});

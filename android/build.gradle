@@ -1,4 +1,8 @@
-apply plugin: 'com.android.library'
+plugins {
+  id("com.android.library")
+  id("org.jetbrains.kotlin.android")
+  id("org.jetbrains.kotlin.plugin.compose") version "2.1.20"
+}
 
 group = 'expo.modules.liquidglassnative'
 version = '0.1.0'
@@ -16,11 +20,8 @@ def useManagedAndroidSdkVersions = false
 if (useManagedAndroidSdkVersions) {
   useDefaultAndroidSdkVersions()
 } else {
-  buildscript {
-    // Simple helper that allows the root project to override versions declared by this library.
-    ext.safeExtGet = { prop, fallback ->
-      rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
-    }
+  ext.safeExtGet = { prop, fallback ->
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
   }
   project.android {
     compileSdkVersion safeExtGet("compileSdkVersion", 36)
@@ -40,4 +41,25 @@ android {
   lintOptions {
     abortOnError false
   }
+  buildFeatures {
+    compose = true
+  }
+  composeOptions {
+    kotlinCompilerExtensionVersion = "1.5.11"
+  }
+}
+
+dependencies {
+  // React Native dependencies for ViewManager
+  implementation("com.facebook.react:react-android")
+  
+  // Compose dependencies
+  implementation("androidx.compose.runtime:runtime:1.9.5")
+  implementation("androidx.compose.foundation:foundation:1.9.5")
+  implementation("androidx.compose.ui:ui:1.9.5")
+  implementation("androidx.compose.ui:ui-graphics:1.9.5")
+  // LiquidGlass backdrop library
+  implementation("io.github.kyant0:backdrop:1.0.0")
+  // Capsule library for LiquidButton shape
+  implementation("io.github.kyant0:capsule:2.1.1")
 }

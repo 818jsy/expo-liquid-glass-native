@@ -4,6 +4,7 @@
   "description": "My new module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
+  "app.plugin.js": "./app.plugin.js",
   "scripts": {
     "build": "expo-module build",
     "clean": "expo-module clean",
@@ -30,6 +31,7 @@
   "homepage": "https://github.com/818jsy/expo-liquid-glass-native.git#readme",
   "dependencies": {},
   "devDependencies": {
+    "@expo/config-plugins": "^9.0.0",
     "@types/react": "~19.1.0",
     "expo-module-scripts": "^5.0.7",
     "expo": "^54.0.24",

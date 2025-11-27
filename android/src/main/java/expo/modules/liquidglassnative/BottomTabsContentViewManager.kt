@@ -125,13 +125,12 @@ class BottomTabsContentViewManager : SimpleViewManager<ComposeView>() {
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                // Background with backdrop - use color background
-                // to avoid ColorDrawable casting issues with system drawables
+                // Background with backdrop - transparent background
                 Box(
                     modifier = Modifier
                         .layerBackdrop(backdrop)
                         .fillMaxSize()
-                        .background(if (isLightTheme) Color(0xFFF5F5F5) else Color(0xFF121212))
+                        .background(Color.Transparent)
                 )
 
                 Box(

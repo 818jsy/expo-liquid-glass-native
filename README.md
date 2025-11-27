@@ -136,7 +136,7 @@ function MyTabs() {
 
 ## License
 
-MIT
+See [LICENSE.txt](LICENSE.txt) for details.
 
 ## Contributing
 

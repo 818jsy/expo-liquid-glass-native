@@ -134,40 +134,6 @@ function MyTabs() {
 - **iOS**: Not yet implemented (PRs welcome!)
 - **Expo SDK**: 54+
 
-## What the plugin does
-
-The config plugin automatically:
-
-1. Adds Compose plugin to `settings.gradle` pluginManagement
-2. Adds Compose plugin and dependencies to `app/build.gradle`
-3. Registers ViewManagers in `MainApplication.kt`
-
-No manual native code configuration needed! 🎉
-
-## Troubleshooting
-
-### Build errors
-
-If you encounter build errors, try:
-
-```bash
-# Clean build
-cd android
-./gradlew clean
-cd ..
-
-# Rebuild
-npx expo prebuild --clean
-npx expo run:android
-```
-
-### View not found errors
-
-Make sure you've:
-1. Added the plugin to `app.json`
-2. Run `npx expo prebuild --clean`
-3. Rebuilt the app
-
 ## License
 
 MIT

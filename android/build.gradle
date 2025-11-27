@@ -1,0 +1,65 @@
+plugins {
+  id("com.android.library")
+  id("org.jetbrains.kotlin.android")
+  id("org.jetbrains.kotlin.plugin.compose") version "2.1.20"
+}
+
+group = 'expo.modules.liquidglassnative'
+version = '0.1.0'
+
+def expoModulesCorePlugin = new File(project(":expo-modules-core").projectDir.absolutePath, "ExpoModulesCorePlugin.gradle")
+apply from: expoModulesCorePlugin
+applyKotlinExpoModulesCorePlugin()
+useCoreDependencies()
+useExpoPublishing()
+
+// If you want to use the managed Android SDK versions from expo-modules-core, set this to true.
+// The Android SDK versions will be bumped from time to time in SDK releases and may introduce breaking changes in your module code.
+// Most of the time, you may like to manage the Android SDK versions yourself.
+def useManagedAndroidSdkVersions = false
+if (useManagedAndroidSdkVersions) {
+  useDefaultAndroidSdkVersions()
+} else {
+  ext.safeExtGet = { prop, fallback ->
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+  }
+  project.android {
+    compileSdkVersion safeExtGet("compileSdkVersion", 36)
+    defaultConfig {
+      minSdkVersion safeExtGet("minSdkVersion", 24)
+      targetSdkVersion safeExtGet("targetSdkVersion", 36)
+    }
+  }
+}
+
+android {
+  namespace "expo.modules.liquidglassnative"
+  defaultConfig {
+    versionCode 1
+    versionName "0.1.0"
+  }
+  lintOptions {
+    abortOnError false
+  }
+  buildFeatures {
+    compose = true
+  }
+  composeOptions {
+    kotlinCompilerExtensionVersion = "1.5.11"
+  }
+}
+
+dependencies {
+  // React Native dependencies for ViewManager
+  implementation("com.facebook.react:react-android")
+  
+  // Compose dependencies
+  implementation("androidx.compose.runtime:runtime:1.9.5")
+  implementation("androidx.compose.foundation:foundation:1.9.5")
+  implementation("androidx.compose.ui:ui:1.9.5")
+  implementation("androidx.compose.ui:ui-graphics:1.9.5")
+  // LiquidGlass backdrop library
+  implementation("io.github.kyant0:backdrop:1.0.0")
+  // Capsule library for LiquidButton shape
+  implementation("io.github.kyant0:capsule:2.1.1")
+}

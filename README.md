@@ -6,7 +6,9 @@ Expo module for LiquidGlass native Android components with beautiful glassmorphi
 
 ## Demo
 
-![Demo](assets/demo.gif)
+<div align="center">
+  <img src="assets/demo.gif" width="150" alt="Demo" />
+</div>
 
 ## Installation
 

@@ -29,9 +29,10 @@
   "author": "818jsy <818jsy72@gmail.com> (818jsy)",
   "license": "MIT",
   "homepage": "https://github.com/818jsy/expo-liquid-glass-native.git#readme",
-  "dependencies": {},
+  "dependencies": {
+    "@expo/config-plugins": "^9.0.0"
+  },
   "devDependencies": {
-    "@expo/config-plugins": "^9.0.0",
     "@types/react": "~19.1.0",
     "expo-module-scripts": "^5.0.7",
     "expo": "^54.0.24",

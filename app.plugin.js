@@ -83,8 +83,25 @@ const withExpoLiquidGlassNative = (config) => {
       }
       
       // Configure MainApplication.kt - Add LiquidButtonPackage registration
-      const mainApplicationPath = path.join(projectRoot, 'app', 'src', 'main', 'java', 'expo', 'modules', 'liquidglassnative', 'example', 'MainApplication.kt');
-      if (fs.existsSync(mainApplicationPath)) {
+      // Dynamically find MainApplication.kt by searching for it
+      const findMainApplication = (dir) => {
+        const files = fs.readdirSync(dir, { withFileTypes: true });
+        for (const file of files) {
+          const fullPath = path.join(dir, file.name);
+          if (file.isDirectory()) {
+            const found = findMainApplication(fullPath);
+            if (found) return found;
+          } else if (file.name === 'MainApplication.kt') {
+            return fullPath;
+          }
+        }
+        return null;
+      };
+      
+      const javaSrcPath = path.join(projectRoot, 'app', 'src', 'main', 'java');
+      const mainApplicationPath = fs.existsSync(javaSrcPath) ? findMainApplication(javaSrcPath) : null;
+      
+      if (mainApplicationPath && fs.existsSync(mainApplicationPath)) {
         let mainApplication = fs.readFileSync(mainApplicationPath, 'utf8');
         
         // Check if LiquidButtonPackage is already added

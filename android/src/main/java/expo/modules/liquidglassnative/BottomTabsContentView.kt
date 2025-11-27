@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
@@ -59,25 +60,13 @@ class BottomTabsContentView(context: Context, appContext: AppContext) : ExpoView
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                val context = LocalContext.current
-                val wallpaperResId = context.resources.getIdentifier(
-                    "wallpaper_light",
-                    "drawable",
-                    context.packageName
-                )
-
-                // Background image with backdrop
-                Image(
-                    painter = if (wallpaperResId != 0) {
-                        painterResource(wallpaperResId)
-                    } else {
-                        painterResource(android.R.drawable.screen_background_light)
-                    },
-                    contentDescription = null,
+                // Background with backdrop - use color background
+                // to avoid ColorDrawable casting issues and resource dependency
+                Box(
                     modifier = Modifier
                         .layerBackdrop(backdrop)
-                        .fillMaxSize(),
-                    contentScale = ContentScale.Crop
+                        .fillMaxSize()
+                        .background(if (isLightTheme) Color(0xFFF5F5F5) else Color(0xFF121212))
                 )
 
                 Box(

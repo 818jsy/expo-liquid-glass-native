@@ -1,7 +1,7 @@
 {
   "name": "expo-liquid-glass-native",
-  "version": "1.2.0",
-  "description": "My new module",
+  "version": "1.2.3",
+  "description": "Expo module for LiquidGlass native Android components with beautiful glassmorphism effects",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "app.plugin.js": "./app.plugin.js",
@@ -30,7 +30,7 @@
     "url": "https://github.com/818jsy/expo-liquid-glass-native.git/issues"
   },
   "author": "818jsy <818jsy72@gmail.com> (818jsy)",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "homepage": "https://github.com/818jsy/expo-liquid-glass-native.git#readme",
   "dependencies": {
     "@expo/config-plugins": "^9.0.0"

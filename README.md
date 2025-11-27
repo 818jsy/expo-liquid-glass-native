@@ -140,4 +140,4 @@ MIT
 
 ## Contributing
 
-PRs are welcome! Please open an issue first to discuss major changes.
+PRs are welcome! Please open an issue first to discuss major changes before submitting a pull request.

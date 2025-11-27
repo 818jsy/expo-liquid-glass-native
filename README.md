@@ -2,6 +2,8 @@
 
 Expo module for LiquidGlass native Android components with beautiful glassmorphism effects.
 
+> **Note:** This library is an Expo adaptation of [AndroidLiquidGlass](https://github.com/Kyant0/AndroidLiquidGlass) by Kyant0. It provides native Android components with liquid glass effects for React Native/Expo applications. iOS support is planned for future releases.
+
 ## Installation
 
 ### Step 1: Install the package

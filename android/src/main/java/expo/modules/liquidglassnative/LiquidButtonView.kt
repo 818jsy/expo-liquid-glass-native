@@ -52,8 +52,8 @@ class LiquidButtonView(context: Context, appContext: AppContext) : ExpoView(cont
             // 각 View의 배경 이미지 URI
             val backgroundImageUri = props.backgroundImageUri ?: props.imageUri
             
-            // 배경 이미지가 있으면 BackdropDemoScaffold로 렌더링
-            if (backgroundImageUri != null) {
+            // 배경 이미지가 있거나 실시간 캡처를 사용하는 경우 BackdropDemoScaffold로 렌더링
+            if (backgroundImageUri != null || props.useRealtimeCapture) {
                 BackdropDemoScaffold(
                     backdrop = backdrop,
                     backgroundImageUri = backgroundImageUri,

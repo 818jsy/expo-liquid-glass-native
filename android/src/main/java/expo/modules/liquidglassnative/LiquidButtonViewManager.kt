@@ -1,7 +1,11 @@
 package expo.modules.liquidglassnative
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.net.Uri
+import android.view.View
+import android.view.ViewGroup
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,10 +15,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
+import androidx.compose.runtime.mutableStateOf
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.draw
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
@@ -174,17 +185,115 @@ class LiquidButtonViewManager : SimpleViewManager<ComposeView>() {
         
         view.setContent {
             val density = LocalDensity.current
+            val coroutineScope = rememberCoroutineScope()
+            
+            // 캐시된 Bitmap 상태
+            val cachedBitmap = remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+            val lastSize = remember { mutableStateOf<Pair<Int, Int>?>(null) }
             
             // 각 View가 독립적으로 backdrop 생성
+            // useRealtimeCapture일 때는 뒤의 Android View를 직접 그리도록 수정
+            // 주기적으로 캡처하여 캐시에 저장하고, onDraw에서는 캐시된 Bitmap 사용
             val backdrop = rememberLayerBackdrop(
-                onDraw = { drawContent() }
+                onDraw = {
+                    if (props.useRealtimeCapture) {
+                        // 캐시된 Bitmap이 있으면 사용
+                        cachedBitmap.value?.let { imageBitmap ->
+                            val paint: androidx.compose.ui.graphics.Paint = Paint()
+                            drawContext.canvas.drawImage(
+                                image = imageBitmap,
+                                topLeftOffset = Offset.Zero,
+                                paint = paint
+                            )
+                        } ?: run {
+                            // Bitmap이 아직 생성되지 않았으면 기본 콘텐츠 그리기
+                            drawContent()
+                        }
+                    } else {
+                        drawContent()
+                    }
+                }
             )
+            
+            // 주기적으로 배경 캡처 (매 프레임이 아닌 적절한 주기로)
+            LaunchedEffect(props.useRealtimeCapture) {
+                if (!props.useRealtimeCapture) return@LaunchedEffect
+                
+                // 주기적으로 캡처 (16ms마다, 약 60fps)
+                while (true) {
+                    try {
+                        val composeView = view
+                        
+                        // View의 현재 크기 가져오기
+                        val bitmapWidth = composeView.width.coerceAtLeast(1)
+                        val bitmapHeight = composeView.height.coerceAtLeast(1)
+                        
+                        if (bitmapWidth > 0 && bitmapHeight > 0) {
+                            // Activity의 DecorView 가져오기 (화면 전체)
+                            val activity = (reactContext as? com.facebook.react.bridge.ReactContext)?.currentActivity
+                            
+                            val rootView = activity?.window?.decorView
+                            
+                            if (rootView != null && rootView.visibility == View.VISIBLE) {
+                                val bitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888)
+                                val androidCanvas = Canvas(bitmap)
+                                
+                                // 현재 View의 실제 위치 계산 (화면 기준)
+                                val composeViewLocation = IntArray(2)
+                                composeView.getLocationInWindow(composeViewLocation)
+                                
+                                // Root view의 실제 위치 계산
+                                val rootViewLocation = IntArray(2)
+                                rootView.getLocationInWindow(rootViewLocation)
+                                
+                                // Canvas save
+                                val saveCount = androidCanvas.save()
+                                
+                                try {
+                                    // Root view의 위치를 기준으로 현재 View의 상대 위치로 이동
+                                    val offsetX = composeViewLocation[0] - rootViewLocation[0]
+                                    val offsetY = composeViewLocation[1] - rootViewLocation[1]
+                                    androidCanvas.translate(-offsetX.toFloat(), -offsetY.toFloat())
+                                    
+                                    // 화면 전체 (Root view)를 그리기
+                                    try {
+                                        // Root view의 배경 그리기
+                                        rootView.background?.draw(androidCanvas)
+                                        
+                                        // Root view의 자식들을 그리기 (현재 ComposeView 제외)
+                                        if (rootView is ViewGroup) {
+                                            drawViewGroupChildren(rootView, androidCanvas, composeView, rootViewLocation)
+                                        } else {
+                                            // ViewGroup이 아니면 직접 그리기
+                                            if (rootView != composeView) {
+                                                rootView.draw(androidCanvas)
+                                            }
+                                        }
+                                    } catch (e: Exception) {
+                                        android.util.Log.e("LiquidButtonViewManager", "Error drawing root view: ${e.message}")
+                                    }
+                                } finally {
+                                    androidCanvas.restoreToCount(saveCount)
+                                }
+                                
+                                // 새 Bitmap을 캐시에 저장
+                                cachedBitmap.value = bitmap.asImageBitmap()
+                            }
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.e("LiquidButtonViewManager", "Error creating bitmap: ${e.message}")
+                    }
+                    
+                    // 16ms마다 업데이트 (약 60fps)
+                    delay(16)
+                }
+            }
             
             // 각 View의 배경 이미지 URI
             val backgroundImageUri = props.backgroundImageUri ?: props.imageUri
             
-            // 배경 이미지가 있으면 BackdropDemoScaffold로 렌더링
-            if (backgroundImageUri != null) {
+            // 배경 이미지가 있거나 실시간 캡처를 사용하는 경우 BackdropDemoScaffold로 렌더링
+            if (backgroundImageUri != null || props.useRealtimeCapture) {
                 BackdropDemoScaffold(
                     backdrop = backdrop,
                     backgroundImageUri = backgroundImageUri,
@@ -259,5 +368,51 @@ class LiquidButtonViewManager : SimpleViewManager<ComposeView>() {
         reactContext
             .getJSModule(RCTEventEmitter::class.java)
             .receiveEvent(view.id, "topPress", event)
+    }
+    
+    // ViewGroup의 자식들을 재귀적으로 그리는 헬퍼 함수
+    private fun drawViewGroupChildren(
+        parent: ViewGroup,
+        canvas: Canvas,
+        excludeView: View,
+        parentLocation: IntArray
+    ) {
+        for (i in 0 until parent.childCount) {
+            val child = parent.getChildAt(i)
+            
+            // 제외할 View는 건너뛰기
+            if (child == excludeView || child.visibility != View.VISIBLE) {
+                continue
+            }
+            
+            try {
+                val childLocation = IntArray(2)
+                child.getLocationInWindow(childLocation)
+                val childOffsetX = childLocation[0] - parentLocation[0]
+                val childOffsetY = childLocation[1] - parentLocation[1]
+                
+                val saveCount = canvas.save()
+                try {
+                    canvas.translate(childOffsetX.toFloat(), childOffsetY.toFloat())
+                    
+                    // 자식이 ViewGroup이면 재귀적으로 그리기
+                    if (child is ViewGroup) {
+                        val childParentLocation = IntArray(2)
+                        child.getLocationInWindow(childParentLocation)
+                        drawViewGroupChildren(child, canvas, excludeView, childParentLocation)
+                    } else {
+                        // 일반 View는 직접 그리기
+                        child.draw(canvas)
+                    }
+                } catch (e: Exception) {
+                    // RuntimeShader 등 지원하지 않는 기능은 무시
+                    android.util.Log.d("LiquidButtonViewManager", "Skipping child draw: ${e.message}")
+                } finally {
+                    canvas.restoreToCount(saveCount)
+                }
+            } catch (e: Exception) {
+                // 무시
+            }
+        }
     }
 }

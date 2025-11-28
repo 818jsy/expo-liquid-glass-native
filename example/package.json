@@ -10,10 +10,14 @@
   },
   "dependencies": {
     "expo": "~54.0.25",
+    "expo-file-system": "~19.0.19",
     "expo-liquid-glass-native": "file:..",
+    "expo-media-library": "~18.2.0",
+    "expo-sharing": "~14.0.7",
     "expo-status-bar": "~3.0.8",
     "react": "19.1.0",
-    "react-native": "0.81.5"
+    "react-native": "0.81.5",
+    "react-native-view-shot": "4.0.3"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",

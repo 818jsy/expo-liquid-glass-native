@@ -13,6 +13,10 @@ import { LiquidButtonView } from 'expo-liquid-glass-native';
  * @param {number} props.blurRadius - Blur radius in dp (default: 2)
  * @param {number} props.lensX - Lens X radius in dp (default: 12)
  * @param {number} props.lensY - Lens Y radius in dp (default: 24)
+ * @param {string} props.imageUri - URI of the background image (optional, deprecated - use backgroundImageUri)
+ * @param {string} props.backgroundImageUri - URI of the background image for this specific button (optional)
+ * @param {boolean} props.useRealtimeCapture - Use realtime screen capture instead of image (default: false)
+ * @param {boolean} props.renderBackgroundContent - Render background content in Compose (default: false)
  * @param {Object} props.style - Style object for the button
  */
 const LiquidButton = ({ 
@@ -24,6 +28,10 @@ const LiquidButton = ({
   blurRadius = 2,
   lensX = 12,
   lensY = 24,
+  imageUri,
+  backgroundImageUri,
+  useRealtimeCapture = false,
+  renderBackgroundContent = false,
   style, 
   ...props 
 }) => {
@@ -42,6 +50,10 @@ const LiquidButton = ({
       blurRadius={blurRadius}
       lensX={lensX}
       lensY={lensY}
+      imageUri={imageUri}
+      backgroundImageUri={backgroundImageUri}
+      useRealtimeCapture={useRealtimeCapture}
+      renderBackgroundContent={renderBackgroundContent}
       onPress={handlePress}
       style={style}
       {...props}

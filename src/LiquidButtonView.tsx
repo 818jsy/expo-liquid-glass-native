@@ -10,6 +10,10 @@ export type LiquidButtonViewProps = ViewProps & {
   blurRadius?: number;
   lensX?: number;
   lensY?: number;
+  imageUri?: string;
+  backgroundImageUri?: string;
+  useRealtimeCapture?: boolean;
+  renderBackgroundContent?: boolean;
 };
 
 const NativeLiquidButtonView = requireNativeComponent<LiquidButtonViewProps>('LiquidButtonView');

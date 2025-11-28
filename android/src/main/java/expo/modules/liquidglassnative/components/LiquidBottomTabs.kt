@@ -24,10 +24,12 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -161,7 +163,8 @@ fun LiquidBottomTabs(
             )
         }
 
-        Row(
+        // 1. 탭바 배경 레이어 (항상 그려짐, 지워지지 않음)
+        Box(
             Modifier
                 .graphicsLayer {
                     translationX = panelOffset
@@ -185,7 +188,48 @@ fun LiquidBottomTabs(
                 .then(interactiveHighlight.modifier)
                 .height(64f.dp)
                 .fillMaxWidth()
-                .padding(4f.dp),
+                .padding(4f.dp)
+        )
+
+        // 2. 아이콘 레이어 (렌즈 위치만 투명하게 구멍 뚫음)
+        Row(
+            Modifier
+                .graphicsLayer {
+                    translationX = panelOffset
+                    // BlendMode.Clear가 배경(탭바)까지 뚫지 않고, 이 레이어(아이콘)만 뚫도록 Offscreen 처리
+                    compositingStrategy = CompositingStrategy.Offscreen
+                }
+                .height(64f.dp)
+                .fillMaxWidth()
+                .padding(4f.dp)
+                .drawWithContent {
+                    drawContent()
+                    
+                    val currentTabX = if (isLtr) {
+                        dampedDragAnimation.value * tabWidth
+                    } else {
+                        size.width - (dampedDragAnimation.value + 1f) * tabWidth
+                    }
+                    
+                    // 렌즈 위치만큼 아이콘 레이어를 투명하게 지움 -> 뒤의 탭바 배경이 보임
+                    var scaleX = dampedDragAnimation.scaleX
+                    var scaleY = dampedDragAnimation.scaleY
+                    val velocity = dampedDragAnimation.velocity / 10f
+                    scaleX /= 1f - (velocity * 0.75f).fastCoerceIn(-0.2f, 0.2f)
+                    scaleY *= 1f - (velocity * 0.25f).fastCoerceIn(-0.2f, 0.2f)
+
+                    val rectWidth = tabWidth * scaleX
+                    val rectHeight = size.height * scaleY
+                    val rectLeft = currentTabX + (tabWidth - rectWidth) / 2f
+                    val rectTop = (size.height - rectHeight) / 2f
+
+                    drawRect(
+                        color = Color.Black,
+                        topLeft = Offset(rectLeft, rectTop),
+                        size = androidx.compose.ui.geometry.Size(rectWidth, rectHeight),
+                        blendMode = BlendMode.Clear
+                    )
+                },
             verticalAlignment = Alignment.CenterVertically,
             content = content
         )

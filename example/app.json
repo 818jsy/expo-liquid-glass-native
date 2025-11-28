@@ -30,6 +30,12 @@
     },
     "plugins": [
       "../app.plugin.js"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "879f1deb-ba08-4f06-9e79-cf19c43e9cd1"
+      }
+    },
+    "owner": "818jsy"
   }
 }

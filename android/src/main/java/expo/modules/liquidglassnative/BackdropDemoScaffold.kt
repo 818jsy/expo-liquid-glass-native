@@ -147,103 +147,112 @@ internal fun BackdropDemoScaffold(
         Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        // 배경 이미지가 있으면 렌더링
-        if (backgroundImageUri != null) {
-            if (useRealtimeCapture) {
-                if (renderBackgroundContent) {
-                    // 실시간 캡처 + 배경 콘텐츠 렌더링
-                    painter?.let { currentPainter ->
-                        Image(
-                            currentPainter,
-                            null,
-                            Modifier
-                                .fillMaxSize()
-                                .layerBackdrop(backdrop),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-                    
-                    Column(
-                        Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
-                            .padding(20.dp)
-                    ) {
-                        BasicText(
-                            "Liquid Glass Buttons",
-                            Modifier.padding(bottom = 8.dp),
-                            style = TextStyle(
-                                color = Color.Black,
-                                fontSize = 28.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                        
-                        BasicText(
-                            "These buttons demonstrate the liquid glass effect with real-time backdrop capture. Scroll to see the effect on different backgrounds.",
-                            Modifier.padding(bottom = 30.dp),
-                            style = TextStyle(
-                                color = Color(0xFF333333),
-                                fontSize = 16.sp
-                            )
-                        )
-                        
-                        repeat(10) { index ->
-                            Box(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(100.dp)
-                                    .padding(bottom = 20.dp)
-                                    .background(
-                                        Color(0x4DFFFFFF),
-                                        RoundedCornerShape(12.dp)
-                                    )
-                            ) {
-                                Column(
-                                    Modifier
-                                        .fillMaxSize()
-                                        .padding(16.dp)
-                                ) {
-                                    BasicText(
-                                        "Content Item ${index + 1}",
-                                        style = TextStyle(
-                                            color = Color.Black,
-                                            fontSize = 18.sp,
-                                            fontWeight = FontWeight.SemiBold
-                                        )
-                                    )
-                                    Spacer(Modifier.height(8.dp))
-                                    BasicText(
-                                        "This is scrollable content that will be captured by the liquid glass effect.",
-                                        style = TextStyle(
-                                            color = Color(0xFF333333),
-                                            fontSize = 14.sp
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    // 실시간 캡처만
-                    Box(
-                        Modifier
-                            .fillMaxSize()
-                            .layerBackdrop(backdrop)
-                    )
-                }
-            } else {
-                // 이미지 배경 표시
+        // 실시간 캡처를 사용하는 경우
+        if (useRealtimeCapture) {
+            android.util.Log.d("BackdropDemoScaffold", "Using realtime capture, renderBackgroundContent: $renderBackgroundContent")
+            if (renderBackgroundContent) {
+                // 실시간 캡처 + 배경 콘텐츠 렌더링
                 painter?.let { currentPainter ->
                     Image(
                         currentPainter,
                         null,
                         Modifier
-                            .layerBackdrop(backdrop)
-                            .fillMaxSize(),
+                            .fillMaxSize()
+                            .layerBackdrop(backdrop),
                         contentScale = ContentScale.Crop
                     )
                 }
+                
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(20.dp)
+                ) {
+                    BasicText(
+                        "Liquid Glass Buttons",
+                        Modifier.padding(bottom = 8.dp),
+                        style = TextStyle(
+                            color = Color.Black,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    
+                    BasicText(
+                        "These buttons demonstrate the liquid glass effect with real-time backdrop capture. Scroll to see the effect on different backgrounds.",
+                        Modifier.padding(bottom = 30.dp),
+                        style = TextStyle(
+                            color = Color(0xFF333333),
+                            fontSize = 16.sp
+                        )
+                    )
+                    
+                    repeat(10) { index ->
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(100.dp)
+                                .padding(bottom = 20.dp)
+                                .background(
+                                    Color(0x4DFFFFFF),
+                                    RoundedCornerShape(12.dp)
+                                )
+                        ) {
+                            Column(
+                                Modifier
+                                    .fillMaxSize()
+                                    .padding(16.dp)
+                            ) {
+                                BasicText(
+                                    "Content Item ${index + 1}",
+                                    style = TextStyle(
+                                        color = Color.Black,
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                BasicText(
+                                    "This is scrollable content that will be captured by the liquid glass effect.",
+                                    style = TextStyle(
+                                        color = Color(0xFF333333),
+                                        fontSize = 14.sp
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+                } else {
+                // 실시간 캡처만 (배경 이미지 없이 현재 화면 캡처)
+                android.util.Log.d("BackdropDemoScaffold", "Using realtime capture only (no background image)")
+                android.util.Log.d("BackdropDemoScaffold", "Applying layerBackdrop modifier to Box")
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .layerBackdrop(backdrop)
+                ) {
+                    android.util.Log.d("BackdropDemoScaffold", "Box with layerBackdrop rendered")
+                    // 디버깅: 캡처가 안 되면 이 텍스트가 보임
+                    // BasicText(
+                    //     "Backdrop Capture",
+                    //     Modifier.align(Alignment.Center),
+                    //     style = TextStyle(color = Color.Red, fontSize = 12.sp)
+                    // )
+                }
+            }
+        } else if (backgroundImageUri != null) {
+            // 이미지 배경 표시 (실시간 캡처 사용 안 함)
+            painter?.let { currentPainter ->
+                Image(
+                    currentPainter,
+                    null,
+                    Modifier
+                        .layerBackdrop(backdrop)
+                        .fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
             }
         }
         

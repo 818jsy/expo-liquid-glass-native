@@ -1,6 +1,6 @@
 {
   "name": "expo-liquid-glass-native",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Expo module for LiquidGlass native Android components with beautiful glassmorphism effects",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -10,7 +10,7 @@
     "clean": "expo-module clean",
     "lint": "expo-module lint",
     "test": "expo-module test",
-    "prepare": "expo-module prepare",
+    "prepare": "node -e \"try { require.resolve('typescript'); } catch(e) { console.log('Skipping prepare: TypeScript not available'); process.exit(0); }\" && expo-module prepare",
     "prepublishOnly": "expo-module prepublishOnly",
     "expo-module": "expo-module",
     "open:ios": "xed example/ios",
@@ -39,7 +39,8 @@
     "@types/react": "~19.1.0",
     "expo-module-scripts": "^5.0.7",
     "expo": "^54.0.24",
-    "react-native": "0.81.5"
+    "react-native": "0.81.5",
+    "typescript": "~5.9.2"
   },
   "peerDependencies": {
     "expo": "*",

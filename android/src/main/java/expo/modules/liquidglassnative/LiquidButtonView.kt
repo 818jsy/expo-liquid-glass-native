@@ -1,8 +1,7 @@
 package expo.modules.liquidglassnative
 
 import android.content.Context
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,11 +13,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.viewevent.EventDispatcher
 import expo.modules.kotlin.views.ExpoView
 import expo.modules.liquidglassnative.components.LiquidButton
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import androidx.compose.foundation.layout.BoxScope
 
 class LiquidButtonView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
     private val onPress by EventDispatcher<Map<String, Any>>()
@@ -30,7 +30,11 @@ class LiquidButtonView(context: Context, appContext: AppContext) : ExpoView(cont
         val surfaceColor: Color = Color.Unspecified,
         val blurRadius: Float = 2f,
         val lensX: Float = 12f,
-        val lensY: Float = 24f
+        val lensY: Float = 24f,
+        val imageUri: String? = null,
+        val backgroundImageUri: String? = null,
+        val useRealtimeCapture: Boolean = false,
+        val renderBackgroundContent: Boolean = false
     )
 
     private var props by mutableStateOf(ButtonProps())
@@ -38,31 +42,83 @@ class LiquidButtonView(context: Context, appContext: AppContext) : ExpoView(cont
     private val composeView = ComposeView(context).apply {
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
         setContent {
-            val backdrop = rememberLayerBackdrop()
             val density = LocalDensity.current
-
-            LiquidButton(
-                onClick = {
-                    if (props.enabled) {
-                        onPress(mapOf())
+            
+            // 각 View가 독립적으로 backdrop 생성
+            val backdrop = rememberLayerBackdrop(
+                onDraw = { drawContent() }
+            )
+            
+            // 각 View의 배경 이미지 URI
+            val backgroundImageUri = props.backgroundImageUri ?: props.imageUri
+            
+            // 배경 이미지가 있으면 BackdropDemoScaffold로 렌더링
+            if (backgroundImageUri != null) {
+                BackdropDemoScaffold(
+                    backdrop = backdrop,
+                    backgroundImageUri = backgroundImageUri,
+                    useRealtimeCapture = props.useRealtimeCapture,
+                    renderBackgroundContent = props.renderBackgroundContent
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        LiquidButton(
+                            onClick = {
+                                if (props.enabled) {
+                                    onPress(mapOf())
+                                }
+                            },
+                            backdrop = backdrop,
+                            modifier = Modifier,
+                            isInteractive = props.enabled,
+                            tint = props.tint,
+                            surfaceColor = props.surfaceColor,
+                            blurRadius = with(density) { props.blurRadius.dp.toPx() },
+                            lensX = with(density) { props.lensX.dp.toPx() },
+                            lensY = with(density) { props.lensY.dp.toPx() }
+                        ) {
+                            BasicText(
+                                props.title,
+                                style = TextStyle(
+                                    color = if (props.tint.isSpecified) Color.White else Color.Black,
+                                    fontSize = 15f.sp
+                                )
+                            )
+                        }
                     }
-                },
-                backdrop = backdrop,
-                modifier = Modifier,
-                isInteractive = props.enabled,
-                tint = props.tint,
-                surfaceColor = props.surfaceColor,
-                blurRadius = with(density) { props.blurRadius.dp.toPx() },
-                lensX = with(density) { props.lensX.dp.toPx() },
-                lensY = with(density) { props.lensY.dp.toPx() }
-            ) {
-                BasicText(
-                    props.title,
-                    style = TextStyle(
-                        color = if (props.tint.isSpecified) Color.White else Color.Black,
-                        fontSize = 15f.sp
-                    )
-                )
+                }
+            } else {
+                // 배경이 없는 경우
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    LiquidButton(
+                        onClick = {
+                            if (props.enabled) {
+                                onPress(mapOf())
+                            }
+                        },
+                        backdrop = backdrop,
+                        modifier = Modifier,
+                        isInteractive = props.enabled,
+                        tint = props.tint,
+                        surfaceColor = props.surfaceColor,
+                        blurRadius = with(density) { props.blurRadius.dp.toPx() },
+                        lensX = with(density) { props.lensX.dp.toPx() },
+                        lensY = with(density) { props.lensY.dp.toPx() }
+                    ) {
+                        BasicText(
+                            props.title,
+                            style = TextStyle(
+                                color = if (props.tint.isSpecified) Color.White else Color.Black,
+                                fontSize = 15f.sp
+                            )
+                        )
+                    }
+                }
             }
         }
     }
@@ -78,7 +134,11 @@ class LiquidButtonView(context: Context, appContext: AppContext) : ExpoView(cont
         surfaceColor: String? = null,
         blurRadius: Float? = null,
         lensX: Float? = null,
-        lensY: Float? = null
+        lensY: Float? = null,
+        imageUri: String? = null,
+        backgroundImageUri: String? = null,
+        useRealtimeCapture: Boolean? = null,
+        renderBackgroundContent: Boolean? = null
     ) {
         props = props.copy(
             title = title ?: props.title,
@@ -99,7 +159,11 @@ class LiquidButtonView(context: Context, appContext: AppContext) : ExpoView(cont
             } ?: props.surfaceColor,
             blurRadius = blurRadius ?: props.blurRadius,
             lensX = lensX ?: props.lensX,
-            lensY = lensY ?: props.lensY
+            lensY = lensY ?: props.lensY,
+            imageUri = imageUri ?: props.imageUri,
+            backgroundImageUri = backgroundImageUri ?: props.backgroundImageUri,
+            useRealtimeCapture = useRealtimeCapture ?: props.useRealtimeCapture,
+            renderBackgroundContent = renderBackgroundContent ?: props.renderBackgroundContent
         )
     }
 }

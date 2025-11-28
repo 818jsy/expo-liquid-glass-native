@@ -29,6 +29,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
@@ -223,12 +224,33 @@ fun LiquidBottomTabs(
                     val rectLeft = currentTabX + (tabWidth - rectWidth) / 2f
                     val rectTop = (size.height - rectHeight) / 2f
 
-                    drawRect(
-                        color = Color.Black,
-                        topLeft = Offset(rectLeft, rectTop),
-                        size = androidx.compose.ui.geometry.Size(rectWidth, rectHeight),
-                        blendMode = BlendMode.Clear
-                    )
+                    translate(rectLeft, rectTop) {
+                        val outline = ContinuousCapsule.createOutline(
+                            androidx.compose.ui.geometry.Size(rectWidth, rectHeight),
+                            layoutDirection,
+                            this@drawWithContent
+                        )
+                        when (outline) {
+                            is androidx.compose.ui.graphics.Outline.Rectangle -> drawRect(
+                                color = Color.Black,
+                                topLeft = outline.rect.topLeft,
+                                size = outline.rect.size,
+                                blendMode = BlendMode.Clear
+                            )
+                            is androidx.compose.ui.graphics.Outline.Rounded -> {
+                                drawPath(
+                                    path = androidx.compose.ui.graphics.Path().apply { addRoundRect(outline.roundRect) },
+                                    color = Color.Black,
+                                    blendMode = BlendMode.Clear
+                                )
+                            }
+                            is androidx.compose.ui.graphics.Outline.Generic -> drawPath(
+                                path = outline.path,
+                                color = Color.Black,
+                                blendMode = BlendMode.Clear
+                            )
+                        }
+                    }
                 },
             verticalAlignment = Alignment.CenterVertically,
             content = content

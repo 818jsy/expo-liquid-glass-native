@@ -66,7 +66,6 @@ class BottomTabsContentView(context: Context, appContext: AppContext) : ExpoView
                     modifier = Modifier
                         .layerBackdrop(backdrop)
                         .fillMaxSize()
-                        .background(if (isLightTheme) Color(0xFFF5F5F5) else Color(0xFF121212))
                 )
 
                 Box(

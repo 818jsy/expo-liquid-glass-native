@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, ImageBackground } from 'react-native';
 import BottomTabs from '../components/BottomTabs';
 
 const BottomTabsScreen = () => {
@@ -17,7 +17,11 @@ const BottomTabsScreen = () => {
   // const tabIcons = ['flight_40px', 'flight_40px', 'flight_40px', 'flight_40px'];
 
   return (
-    <View style={styles.container}>
+    <ImageBackground 
+      source={require('../../assets/wallpaper_light.webp')}
+      style={styles.container}
+      resizeMode="cover"
+    >
       {/* 배경용 네이티브 뷰 (투명하게) */}
       <BottomTabs
         selectedTabIndex={selectedTabIndex}
@@ -38,14 +42,13 @@ const BottomTabsScreen = () => {
           Index: {selectedTabIndex}
         </Text>
       </View>
-    </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'red',
   },
   backgroundView: {
     ...StyleSheet.absoluteFillObject,

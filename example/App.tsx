@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
-import HomeScreen from './src/screens/HomeScreen';
-import ButtonsScreen from './src/screens/ButtonsScreen';
-import BottomTabsScreen from './src/screens/BottomTabsScreen';
+import HomeScreen from './src/screens/HomeScreen.js';
+import ButtonsScreen from './src/screens/ButtonsScreen.js';
+import BottomTabsScreen from './src/screens/BottomTabsScreen.js';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('Home');

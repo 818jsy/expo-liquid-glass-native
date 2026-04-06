@@ -1,24 +1,33 @@
 package expo.modules.liquidglassnative
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.view.View
+import android.view.ViewGroup
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
+import com.facebook.react.bridge.ReactContext
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.viewevent.EventDispatcher
 import expo.modules.kotlin.views.ExpoView
 import expo.modules.liquidglassnative.components.LiquidButton
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.ui.geometry.Offset
 
 class LiquidButtonView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
     private val onPress by EventDispatcher<Map<String, Any>>()
@@ -43,16 +52,38 @@ class LiquidButtonView(context: Context, appContext: AppContext) : ExpoView(cont
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
         setContent {
             val density = LocalDensity.current
-            
-            // 각 View가 독립적으로 backdrop 생성
+            val cachedBitmap = remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+
             val backdrop = rememberLayerBackdrop(
-                onDraw = { drawContent() }
+                onDraw = {
+                    if (props.useRealtimeCapture) {
+                        cachedBitmap.value?.let { imageBitmap ->
+                            drawContext.canvas.drawImage(
+                                image = imageBitmap,
+                                topLeftOffset = Offset.Zero,
+                                paint = Paint()
+                            )
+                        } ?: drawContent()
+                    } else {
+                        drawContent()
+                    }
+                }
             )
-            
-            // 각 View의 배경 이미지 URI
+
+            LaunchedEffect(props.useRealtimeCapture) {
+                if (!props.useRealtimeCapture) {
+                    cachedBitmap.value = null
+                    return@LaunchedEffect
+                }
+
+                while (true) {
+                    cachedBitmap.value = captureBackdropBitmap()?.asImageBitmap()
+                    delay(16)
+                }
+            }
+
             val backgroundImageUri = props.backgroundImageUri ?: props.imageUri
-            
-            // 배경 이미지가 있거나 실시간 캡처를 사용하는 경우 BackdropDemoScaffold로 렌더링
+
             if (backgroundImageUri != null || props.useRealtimeCapture) {
                 BackdropDemoScaffold(
                     backdrop = backdrop,
@@ -166,5 +197,82 @@ class LiquidButtonView(context: Context, appContext: AppContext) : ExpoView(cont
             renderBackgroundContent = renderBackgroundContent ?: props.renderBackgroundContent
         )
     }
-}
 
+    private fun captureBackdropBitmap(): Bitmap? {
+        return try {
+            val reactContext = appContext.reactContext as? ReactContext ?: return null
+            val activity = reactContext.currentActivity ?: return null
+            val rootView = activity.window?.decorView ?: return null
+
+            val width = composeView.width.coerceAtLeast(1)
+            val height = composeView.height.coerceAtLeast(1)
+            if (width <= 0 || height <= 0 || rootView.visibility != View.VISIBLE) {
+                return null
+            }
+
+            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap)
+
+            val composeLocation = IntArray(2)
+            composeView.getLocationInWindow(composeLocation)
+            val rootLocation = IntArray(2)
+            rootView.getLocationInWindow(rootLocation)
+
+            val saveCount = canvas.save()
+            try {
+                val offsetX = composeLocation[0] - rootLocation[0]
+                val offsetY = composeLocation[1] - rootLocation[1]
+                canvas.translate(-offsetX.toFloat(), -offsetY.toFloat())
+
+                rootView.background?.draw(canvas)
+                if (rootView is ViewGroup) {
+                    drawViewGroupChildren(rootView, canvas, setOf(this, composeView), rootLocation)
+                } else if (rootView != this && rootView != composeView) {
+                    rootView.draw(canvas)
+                }
+            } finally {
+                canvas.restoreToCount(saveCount)
+            }
+
+            bitmap
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun drawViewGroupChildren(
+        parent: ViewGroup,
+        canvas: Canvas,
+        excludeViews: Set<View>,
+        parentLocation: IntArray
+    ) {
+        for (index in 0 until parent.childCount) {
+            val child = parent.getChildAt(index)
+            if (child in excludeViews || child.visibility != View.VISIBLE) {
+                continue
+            }
+
+            try {
+                val childLocation = IntArray(2)
+                child.getLocationInWindow(childLocation)
+                val childOffsetX = childLocation[0] - parentLocation[0]
+                val childOffsetY = childLocation[1] - parentLocation[1]
+
+                val saveCount = canvas.save()
+                try {
+                    canvas.translate(childOffsetX.toFloat(), childOffsetY.toFloat())
+                    if (child is ViewGroup) {
+                        val childParentLocation = IntArray(2)
+                        child.getLocationInWindow(childParentLocation)
+                        drawViewGroupChildren(child, canvas, excludeViews, childParentLocation)
+                    } else {
+                        child.draw(canvas)
+                    }
+                } finally {
+                    canvas.restoreToCount(saveCount)
+                }
+            } catch (_: Exception) {
+            }
+        }
+    }
+}

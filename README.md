@@ -4,7 +4,7 @@ Expo module for LiquidGlass native Android components with beautiful glassmorphi
 
 > **Note:** This library is an Expo adaptation of [AndroidLiquidGlass](https://github.com/Kyant0/AndroidLiquidGlass) by Kyant0. It provides native Android components with liquid glass effects for React Native/Expo applications. iOS support is planned for future releases.
 
-현재 로컬 구현 기준으로는 `ExpoLiquidGlassNativeView`가 기본 컴포넌트이고, `LiquidButtonView`는 동일한 컴포넌트에 대한 하위 호환 alias입니다.
+In the current implementation, `ExpoLiquidGlassNativeView` is the primary component, and `LiquidButtonView` is a backward-compatible alias for the same underlying view.
 
 ## Demo
 
@@ -65,7 +65,7 @@ No manual native code configuration needed! 🎉
 
 ### ExpoLiquidGlassNativeView
 
-로컬 기준으로 새 코드는 `ExpoLiquidGlassNativeView`를 직접 사용하는 쪽을 권장합니다. 이 컴포넌트는 glass 배경을 네이티브에서 렌더링하고, React Native `children`은 그 위에 오버레이 콘텐츠로 배치합니다.
+For new code, prefer using `ExpoLiquidGlassNativeView` directly. It renders the glass surface natively and places React Native `children` as overlay content above it.
 
 ```tsx
 import { ExpoLiquidGlassNativeView } from 'expo-liquid-glass-native';

@@ -65,7 +65,16 @@ No manual native code configuration needed! 🎉
 
 ### ExpoLiquidGlassNativeView
 
-For new code, prefer using `ExpoLiquidGlassNativeView` directly. It renders the glass surface natively and places React Native `children` as overlay content above it.
+For new code, prefer using `ExpoLiquidGlassNativeView` directly. It renders the glass surface natively and places React Native `children` as overlay content above it. `useRealtimeCapture` is enabled by default.
+
+Default preset:
+- `tint="#FFFFFF"`
+- `surfaceColor="#14FFFFFF"`
+- `blurRadius={1}`
+- `lensX={28}`
+- `lensY={28}`
+- `cornerRadius={28}`
+- `useRealtimeCapture={true}`
 
 ```tsx
 import { ExpoLiquidGlassNativeView } from 'expo-liquid-glass-native';
@@ -74,13 +83,6 @@ import { Text, View } from 'react-native';
 function MyGlassCard() {
   return (
     <ExpoLiquidGlassNativeView
-      tint="transparent"
-      surfaceColor="#22FFFFFF"
-      blurRadius={8}
-      lensX={24}
-      lensY={24}
-      cornerRadius={28}
-      useRealtimeCapture={true}
       style={{ width: 240, padding: 20, borderRadius: 28 }}
     >
       <View>
@@ -92,76 +94,21 @@ function MyGlassCard() {
 }
 ```
 
-### LiquidButton
-
-#### Basic Usage
-
-```tsx
-import { LiquidButtonView } from 'expo-liquid-glass-native';
-import { Text, View } from 'react-native';
-
-function MyComponent() {
-  return (
-    <LiquidButtonView
-      tint="#0088FF"
-      surfaceColor="#FFFFFF4D"
-      blurRadius={8}
-      cornerRadius={24}
-      style={{ width: 200, paddingVertical: 14, borderRadius: 24 }}
-    >
-      <View style={{ alignItems: 'center' }}>
-        <Text style={{ color: '#111', fontWeight: '600' }}>Button</Text>
-      </View>
-    </LiquidButtonView>
-  );
-}
-```
-
-#### With Realtime Background Capture
-
-The `useRealtimeCapture` prop allows the button to capture the screen content behind it in real-time, creating a beautiful glassmorphism effect that reflects the actual background:
-
-```tsx
-import { LiquidButtonView } from 'expo-liquid-glass-native';
-import { ScrollView, ImageBackground, Text, View } from 'react-native';
-
-function MyComponent() {
-  return (
-    <ScrollView>
-      <ImageBackground source={require('./assets/wallpaper.jpg')}>
-        <LiquidButtonView
-          useRealtimeCapture={true}
-          tint="transparent"
-          surfaceColor="#00FFFFFF"
-          blurRadius={8}
-          cornerRadius={24}
-          style={{ width: 200, paddingVertical: 14, borderRadius: 24 }}
-        >
-          <View style={{ alignItems: 'center' }}>
-            <Text style={{ color: '#111', fontWeight: '600' }}>Glass Button</Text>
-          </View>
-        </LiquidButtonView>
-      </ImageBackground>
-    </ScrollView>
-  );
-}
-```
-
 **Props:**
-- `tint?: string` - Tint color in hex format (e.g., "#0088FF" or "transparent")
-- `surfaceColor?: string` - Surface color in hex format with alpha (e.g., "#FFFFFF4D" or "#00FFFFFF" for transparent)
-- `blurRadius?: number` - Blur radius in dp
-- `lensX?: number` - Lens X radius in dp (default: 12)
-- `lensY?: number` - Lens Y radius in dp (default: 24)
-- `cornerRadius?: number` - Corner radius in dp
+ - `tint?: string` - Tint color in hex format. Default: `"#FFFFFF"`
+ - `surfaceColor?: string` - Surface color in hex format with alpha. Default: `"#14FFFFFF"`
+ - `blurRadius?: number` - Blur radius in dp. Default: `1`
+ - `lensX?: number` - Lens X radius in dp. Default: `28`
+ - `lensY?: number` - Lens Y radius in dp. Default: `28`
+ - `cornerRadius?: number` - Corner radius in dp. Default: `28`
 - `imageUri?: string` - URI of the background image (deprecated, use `backgroundImageUri` instead)
 - `backgroundImageUri?: string` - URI of the background image for this specific button
-- `useRealtimeCapture?: boolean` - Use realtime screen capture instead of image. Captures the entire screen behind the button (default: false)
+- `useRealtimeCapture?: boolean` - Use realtime screen capture instead of image. Captures the entire screen behind the component. Default: `true`
 - `renderBackgroundContent?: boolean` - Render background content in Compose (default: false)
 - `children?: React.ReactNode` - Overlay content rendered above the native glass surface
 - `style?: ViewStyle` - Style object
 
-**Note:** `LiquidButtonView` is currently just a backward-compatible alias of `ExpoLiquidGlassNativeView`.
+**Alias:** `LiquidButtonView` is a backward-compatible alias of `ExpoLiquidGlassNativeView`.
 
 **Note:** When `useRealtimeCapture` is enabled, the component captures the screen content behind it in real time. Overlay `children` are excluded from the blurred backdrop so foreground content stays sharp.
 

@@ -35,15 +35,15 @@ import expo.modules.kotlin.views.ExpoView
 import kotlinx.coroutines.delay
 
 private data class GlassProps(
-  val tint: Color = Color.Unspecified,
-  val surfaceColor: Color = Color(0x1AFFFFFF),
-  val blurRadius: Float = 8f,
-  val lensX: Float = 24f,
-  val lensY: Float = 24f,
-  val cornerRadius: Float = 24f,
+  val tint: Color = Color(0xFFFFFFFF),
+  val surfaceColor: Color = Color(0x14FFFFFF),
+  val blurRadius: Float = 1f,
+  val lensX: Float = 28f,
+  val lensY: Float = 28f,
+  val cornerRadius: Float = 28f,
   val imageUri: String? = null,
   val backgroundImageUri: String? = null,
-  val useRealtimeCapture: Boolean = false,
+  val useRealtimeCapture: Boolean = true,
   val renderBackgroundContent: Boolean = false
 )
 

@@ -7,10 +7,10 @@ export default function ExpoLiquidGlassNativeView(props: ExpoLiquidGlassNativeVi
   const {
     children,
     style,
-    tint,
-    surfaceColor,
-    blurRadius = 12,
-    cornerRadius = 24,
+    tint = '#FFFFFF',
+    surfaceColor = '#14FFFFFF',
+    blurRadius = 1,
+    cornerRadius = 28,
     ...rest
   } = props;
 
@@ -21,11 +21,11 @@ export default function ExpoLiquidGlassNativeView(props: ExpoLiquidGlassNativeVi
         {
           overflow: 'hidden',
           borderRadius: cornerRadius,
-          backgroundColor: surfaceColor ?? 'rgba(255,255,255,0.16)',
+          backgroundColor: surfaceColor,
           backdropFilter: `blur(${blurRadius}px)`,
           WebkitBackdropFilter: `blur(${blurRadius}px)`,
           borderWidth: 1,
-          borderColor: tint ?? 'rgba(255,255,255,0.18)',
+          borderColor: tint,
         } as never,
         style,
       ]}

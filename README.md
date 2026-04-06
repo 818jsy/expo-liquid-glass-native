@@ -4,6 +4,8 @@ Expo module for LiquidGlass native Android components with beautiful glassmorphi
 
 > **Note:** This library is an Expo adaptation of [AndroidLiquidGlass](https://github.com/Kyant0/AndroidLiquidGlass) by Kyant0. It provides native Android components with liquid glass effects for React Native/Expo applications. iOS support is planned for future releases.
 
+현재 로컬 구현 기준으로는 `ExpoLiquidGlassNativeView`가 기본 컴포넌트이고, `LiquidButtonView`는 동일한 컴포넌트에 대한 하위 호환 alias입니다.
+
 ## Demo
 
 <div align="center">
@@ -55,7 +57,7 @@ npx expo run:android
 That's it! The config plugin will automatically:
 - ✅ Add Compose plugin to `settings.gradle`
 - ✅ Add Compose dependencies to `app/build.gradle`
-- ✅ Register ViewManagers in `MainApplication.kt`
+- ✅ Add Kotlin JVM toolchain configuration for Java 17
 
 No manual native code configuration needed! 🎉
 
@@ -63,50 +65,82 @@ No manual native code configuration needed! 🎉
 
 ### ExpoLiquidGlassNativeView
 
-#### Basic Usage with React Native Children
+로컬 기준으로 새 코드는 `ExpoLiquidGlassNativeView`를 직접 사용하는 쪽을 권장합니다. 이 컴포넌트는 glass 배경을 네이티브에서 렌더링하고, React Native `children`은 그 위에 오버레이 콘텐츠로 배치합니다.
 
 ```tsx
 import { ExpoLiquidGlassNativeView } from 'expo-liquid-glass-native';
 import { Text, View } from 'react-native';
 
-function MyComponent() {
+function MyGlassCard() {
   return (
     <ExpoLiquidGlassNativeView
-      tint="#FFFFFF"
-      surfaceColor="#14FFFFFF"
-      blurRadius={10}
-      cornerRadius={24}
-      style={{ width: 240, height: 96 }}
+      tint="transparent"
+      surfaceColor="#22FFFFFF"
+      blurRadius={8}
+      lensX={24}
+      lensY={24}
+      cornerRadius={28}
+      useRealtimeCapture={true}
+      style={{ width: 240, padding: 20, borderRadius: 28 }}
     >
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Text>Liquid Glass ✨</Text>
+      <View>
+        <Text style={{ fontSize: 18, fontWeight: '600' }}>Liquid Glass</Text>
+        <Text style={{ marginTop: 6 }}>Overlay content rendered above the blur.</Text>
       </View>
     </ExpoLiquidGlassNativeView>
   );
 }
 ```
 
-#### With Realtime Background Capture
+### LiquidButton
 
-The `useRealtimeCapture` prop allows the container to capture the screen content behind it in real-time, while your React Native children render above the glass layer:
+#### Basic Usage
 
 ```tsx
-import { ExpoLiquidGlassNativeView } from 'expo-liquid-glass-native';
+import { LiquidButtonView } from 'expo-liquid-glass-native';
+import { Text, View } from 'react-native';
+
+function MyComponent() {
+  return (
+    <LiquidButtonView
+      tint="#0088FF"
+      surfaceColor="#FFFFFF4D"
+      blurRadius={8}
+      cornerRadius={24}
+      style={{ width: 200, paddingVertical: 14, borderRadius: 24 }}
+    >
+      <View style={{ alignItems: 'center' }}>
+        <Text style={{ color: '#111', fontWeight: '600' }}>Button</Text>
+      </View>
+    </LiquidButtonView>
+  );
+}
+```
+
+#### With Realtime Background Capture
+
+The `useRealtimeCapture` prop allows the button to capture the screen content behind it in real-time, creating a beautiful glassmorphism effect that reflects the actual background:
+
+```tsx
+import { LiquidButtonView } from 'expo-liquid-glass-native';
 import { ScrollView, ImageBackground, Text, View } from 'react-native';
 
 function MyComponent() {
   return (
     <ScrollView>
       <ImageBackground source={require('./assets/wallpaper.jpg')}>
-        <ExpoLiquidGlassNativeView
+        <LiquidButtonView
           useRealtimeCapture={true}
-          cornerRadius={28}
-          style={{ width: 240, height: 96 }}
+          tint="transparent"
+          surfaceColor="#00FFFFFF"
+          blurRadius={8}
+          cornerRadius={24}
+          style={{ width: 200, paddingVertical: 14, borderRadius: 24 }}
         >
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Text>Dynamic children</Text>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={{ color: '#111', fontWeight: '600' }}>Glass Button</Text>
           </View>
-        </ExpoLiquidGlassNativeView>
+        </LiquidButtonView>
       </ImageBackground>
     </ScrollView>
   );
@@ -116,18 +150,20 @@ function MyComponent() {
 **Props:**
 - `tint?: string` - Tint color in hex format (e.g., "#0088FF" or "transparent")
 - `surfaceColor?: string` - Surface color in hex format with alpha (e.g., "#FFFFFF4D" or "#00FFFFFF" for transparent)
-- `blurRadius?: number` - Blur radius in dp (default: 8)
-- `lensX?: number` - Lens X radius in dp (default: 24)
+- `blurRadius?: number` - Blur radius in dp
+- `lensX?: number` - Lens X radius in dp (default: 12)
 - `lensY?: number` - Lens Y radius in dp (default: 24)
-- `cornerRadius?: number` - Corner radius in dp (default: 24)
+- `cornerRadius?: number` - Corner radius in dp
 - `imageUri?: string` - URI of the background image (deprecated, use `backgroundImageUri` instead)
-- `backgroundImageUri?: string` - URI of the background image for this specific container
-- `useRealtimeCapture?: boolean` - Use realtime screen capture instead of image. Captures the entire screen behind the container (default: false)
+- `backgroundImageUri?: string` - URI of the background image for this specific button
+- `useRealtimeCapture?: boolean` - Use realtime screen capture instead of image. Captures the entire screen behind the button (default: false)
 - `renderBackgroundContent?: boolean` - Render background content in Compose (default: false)
-- `children?: React.ReactNode` - React Native children rendered above the glass layer
+- `children?: React.ReactNode` - Overlay content rendered above the native glass surface
 - `style?: ViewStyle` - Style object
 
-**Note:** When `useRealtimeCapture` is enabled, the container captures the entire screen (DecorView) behind it, excluding its own React Native subtree. The capture happens at 60fps for smooth animations.
+**Note:** `LiquidButtonView` is currently just a backward-compatible alias of `ExpoLiquidGlassNativeView`.
+
+**Note:** When `useRealtimeCapture` is enabled, the component captures the screen content behind it in real time. Overlay `children` are excluded from the blurred backdrop so foreground content stays sharp.
 
 ### BottomTabs
 
@@ -189,8 +225,9 @@ function MyTabs() {
 ## Features
 
 - ✨ **Beautiful Glassmorphism Effects** - Native Android components with liquid glass effects
-- 🎨 **Realtime Background Capture** - Capture screen content behind buttons in real-time (60fps)
-- 📱 **ScrollView Compatible** - Works seamlessly with ScrollViews and other scrollable containers
+- 🎨 **Realtime Background Capture** - Capture screen content behind the component in real time
+- 🧩 **Overlay Children Support** - Render React Native children above the native glass layer
+- 📱 **ScrollView Compatible** - Works with ScrollViews and other scrollable containers
 - 🎯 **Customizable** - Adjust blur radius, lens size, colors, and more
 - 🚀 **Performance Optimized** - Hardware-accelerated rendering with efficient caching
 
@@ -210,19 +247,19 @@ Check out the [example](./example) directory for complete usage examples, includ
 
 ## Performance Tips
 
-1. **Realtime Capture**: Use `useRealtimeCapture` sparingly as it captures the screen at 60fps. Consider using static `backgroundImageUri` when possible.
-2. **Blur Radius**: Lower blur radius values (1-3) perform better than higher values.
+1. **Realtime Capture**: Use `useRealtimeCapture` sparingly. Consider using static `backgroundImageUri` when possible.
+2. **Blur Radius**: Lower blur radius values perform better than higher values.
 3. **Caching**: The library automatically caches captured bitmaps for better performance.
 
 ## Known Limitations
 
 - iOS support is planned for future releases
 - Realtime capture may have slight performance impact on lower-end devices
-- Some complex view hierarchies may not capture correctly
+- Some complex Android view hierarchies may not capture exactly as expected
 
 ## License
 
-See [LICENSE.txt](LICENSE.txt) for details.
+See [LICENSE](LICENSE) for details.
 
 ## Contributing
 

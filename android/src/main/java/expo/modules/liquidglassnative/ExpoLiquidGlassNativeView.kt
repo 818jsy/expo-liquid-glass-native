@@ -164,6 +164,7 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
       val reactContext = appContext.reactContext as? ReactContext ?: return null
       val activity = reactContext.currentActivity ?: return null
       val rootView = activity.window?.decorView ?: return null
+      val excludedViews = collectOverlayExclusionSet(rootView)
 
       val width = width.coerceAtLeast(1)
       val height = height.coerceAtLeast(1)
@@ -187,7 +188,7 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
 
         rootView.background?.draw(canvas)
         if (rootView is ViewGroup) {
-          drawViewGroupChildren(rootView, canvas, setOf(this), rootLocation)
+          drawViewGroupChildren(rootView, canvas, excludedViews, rootLocation)
         } else if (rootView != this) {
           rootView.draw(canvas)
         }
@@ -198,6 +199,39 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
       bitmap
     } catch (_: Exception) {
       null
+    }
+  }
+
+  /**
+   * Exclude the glass view itself and any siblings rendered above it in the ancestor chain.
+   * Those views are foreground overlays from the glass perspective and should not become
+   * part of the sampled backdrop bitmap.
+   */
+  private fun collectOverlayExclusionSet(rootView: View): Set<View> {
+    val excludedViews = linkedSetOf<View>()
+    excludedViews += this
+
+    var current: View = this
+    while (current !== rootView) {
+      val parent = current.parent as? ViewGroup ?: break
+      val currentIndex = parent.indexOfChild(current)
+      if (currentIndex >= 0) {
+        for (index in currentIndex + 1 until parent.childCount) {
+          collectViewSubtree(parent.getChildAt(index), excludedViews)
+        }
+      }
+      current = parent
+    }
+
+    return excludedViews
+  }
+
+  private fun collectViewSubtree(view: View, excludedViews: MutableSet<View>) {
+    excludedViews += view
+    if (view is ViewGroup) {
+      for (index in 0 until view.childCount) {
+        collectViewSubtree(view.getChildAt(index), excludedViews)
+      }
     }
   }
 

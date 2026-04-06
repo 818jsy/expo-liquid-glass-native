@@ -13,7 +13,7 @@ export default function ExpoLiquidGlassNativeView(props: ExpoLiquidGlassNativeVi
   return (
     <View style={[styles.container, style]}>
       <NativeView {...nativeProps} style={StyleSheet.absoluteFill} />
-      <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
+      <View pointerEvents="box-none" style={styles.content}>
         {children}
       </View>
     </View>
@@ -22,6 +22,10 @@ export default function ExpoLiquidGlassNativeView(props: ExpoLiquidGlassNativeVi
 
 const styles = StyleSheet.create({
   container: {
+    position: 'relative',
     overflow: 'hidden',
+  },
+  content: {
+    flexShrink: 0,
   },
 });

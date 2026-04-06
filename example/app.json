@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "expo-liquid-glass-native-example",
+    "slug": "expo-liquid-glass-native-example",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "expo.modules.liquidglassnative.example"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "expo.modules.liquidglassnative.example"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "../app.plugin.js"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "879f1deb-ba08-4f06-9e79-cf19c43e9cd1"
+      }
+    },
+    "owner": "818jsy"
+  }
+}

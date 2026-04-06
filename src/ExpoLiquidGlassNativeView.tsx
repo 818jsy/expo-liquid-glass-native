@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { requireNativeViewManager } from 'expo-modules-core';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Dimensions, LayoutChangeEvent, Platform, StyleSheet, View } from 'react-native';
 
 import { ExpoLiquidGlassNativeViewProps } from './ExpoLiquidGlassNative.types';
 import { ensureOverlayHostRegistered } from './overlayHostRegistration';
@@ -15,9 +15,9 @@ export default function ExpoLiquidGlassNativeView(props: ExpoLiquidGlassNativeVi
     style,
     tint = '#FFFFFF',
     surfaceColor = '#14FFFFFF',
-    blurRadius = 1,
-    lensX = 28,
-    lensY = 28,
+    blurRadius = 4,
+    lensX = 50,
+    lensY = 50,
     cornerRadius = 28,
     useRealtimeCapture = true,
     ...nativeProps
@@ -41,39 +41,43 @@ export default function ExpoLiquidGlassNativeView(props: ExpoLiquidGlassNativeVi
     };
   }, [children, useSeparateOverlayWindow]);
 
+  const measureOverlayRect = React.useCallback(() => {
+    containerRef.current?.measureInWindow((x, y, width, height) => {
+      setOverlayRect((prev) =>
+        prev.x === x && prev.y === y && prev.width === width && prev.height === height
+          ? prev
+          : { x, y, width, height }
+      );
+    });
+  }, []);
+
+  const handleLayout = React.useCallback(
+    (_event: LayoutChangeEvent) => {
+      if (!useSeparateOverlayWindow) {
+        return;
+      }
+
+      requestAnimationFrame(measureOverlayRect);
+    },
+    [measureOverlayRect, useSeparateOverlayWindow]
+  );
+
   React.useEffect(() => {
     if (!useSeparateOverlayWindow) {
       return;
     }
 
-    let frame = 0;
-    let mounted = true;
-
-    const measureOverlayRect = () => {
-      containerRef.current?.measureInWindow((x, y, width, height) => {
-        if (!mounted) {
-          return;
-        }
-
-        setOverlayRect((prev) =>
-          prev.x === x && prev.y === y && prev.width === width && prev.height === height
-            ? prev
-            : { x, y, width, height }
-        );
-      });
-      frame = requestAnimationFrame(measureOverlayRect);
-    };
-
-    measureOverlayRect();
+    const frame = requestAnimationFrame(measureOverlayRect);
+    const dimensionSubscription = Dimensions.addEventListener('change', measureOverlayRect);
 
     return () => {
-      mounted = false;
       cancelAnimationFrame(frame);
+      dimensionSubscription.remove();
     };
-  }, [useSeparateOverlayWindow]);
+  }, [measureOverlayRect, useSeparateOverlayWindow]);
 
   return (
-    <View ref={containerRef} style={[styles.container, style]}>
+    <View ref={containerRef} onLayout={handleLayout} style={[styles.container, style]}>
       <NativeView
         {...nativeProps}
         tint={tint}

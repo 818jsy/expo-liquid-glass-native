@@ -27,14 +27,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.findViewTreeCompositionContext
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.facebook.react.bridge.ReactContext
 import com.kyant.backdrop.backdrops.LayerBackdrop
@@ -46,13 +46,16 @@ import com.kyant.backdrop.effects.vibrancy
 import com.kyant.capsule.ContinuousRoundedRectangle
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.views.ExpoView
+import kotlin.math.roundToInt
+
+private const val REALTIME_CAPTURE_SCALE = 0.5f
 
 private data class GlassProps(
   val tint: Color = Color(0xFFFFFFFF),
   val surfaceColor: Color = Color(0x14FFFFFF),
-  val blurRadius: Float = 1f,
-  val lensX: Float = 28f,
-  val lensY: Float = 28f,
+  val blurRadius: Float = 4f,
+  val lensX: Float = 50f,
+  val lensY: Float = 50f,
   val cornerRadius: Float = 28f,
   val imageUri: String? = null,
   val backgroundImageUri: String? = null,
@@ -73,6 +76,7 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
   private var isFrameCaptureScheduled = false
   private var isPixelCopyInFlight = false
   private val mainHandler = Handler(Looper.getMainLooper())
+  private var reusableCaptureBitmap: Bitmap? = null
   private var popupWindow: PopupWindow? = null
   private var popupContainer: FrameLayout? = null
   private var overlaySurface: ReactSurface? = null
@@ -100,10 +104,12 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
         onDraw = {
           if (props.useRealtimeCapture) {
             cachedBackdropBitmap?.let { imageBitmap ->
-              drawContext.canvas.drawImage(
+              drawImage(
                 image = imageBitmap,
-                topLeftOffset = Offset.Zero,
-                paint = Paint()
+                srcOffset = IntOffset.Zero,
+                srcSize = IntSize(imageBitmap.width, imageBitmap.height),
+                dstOffset = IntOffset.Zero,
+                dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt())
               )
             } ?: drawContent()
           } else {
@@ -169,6 +175,7 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
   override fun onDetachedFromWindow() {
     dismissPopupWindow()
     teardownRealtimeCaptureLoop()
+    reusableCaptureBitmap = null
     super.onDetachedFromWindow()
   }
 
@@ -242,8 +249,11 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
         return null
       }
 
-      val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+      val bitmapWidth = (width * REALTIME_CAPTURE_SCALE).roundToInt().coerceAtLeast(1)
+      val bitmapHeight = (height * REALTIME_CAPTURE_SCALE).roundToInt().coerceAtLeast(1)
+      val bitmap = obtainReusableCaptureBitmap(bitmapWidth, bitmapHeight) ?: return null
       val canvas = Canvas(bitmap)
+      canvas.drawColor(android.graphics.Color.TRANSPARENT, android.graphics.PorterDuff.Mode.CLEAR)
 
       val viewLocation = IntArray(2)
       getLocationInWindow(viewLocation)
@@ -254,6 +264,7 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
       try {
         val offsetX = viewLocation[0] - rootLocation[0]
         val offsetY = viewLocation[1] - rootLocation[1]
+        canvas.scale(REALTIME_CAPTURE_SCALE, REALTIME_CAPTURE_SCALE)
         canvas.translate(-offsetX.toFloat(), -offsetY.toFloat())
         rootView.background?.draw(canvas)
         if (rootView is ViewGroup) {
@@ -393,6 +404,8 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
     val density = resources.displayMetrics.density
     val captureWidthPx = ((props.captureRectWidth ?: width / density) * density).toInt().coerceAtLeast(1)
     val captureHeightPx = ((props.captureRectHeight ?: height / density) * density).toInt().coerceAtLeast(1)
+    val bitmapWidthPx = (captureWidthPx * REALTIME_CAPTURE_SCALE).roundToInt().coerceAtLeast(1)
+    val bitmapHeightPx = (captureHeightPx * REALTIME_CAPTURE_SCALE).roundToInt().coerceAtLeast(1)
     val viewLocation = IntArray(2)
     getLocationInWindow(viewLocation)
     val captureX = props.captureRectX?.let { (it * density).toInt() } ?: viewLocation[0]
@@ -403,7 +416,7 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
       captureX + captureWidthPx,
       captureY + captureHeightPx
     )
-    val bitmap = Bitmap.createBitmap(captureWidthPx, captureHeightPx, Bitmap.Config.ARGB_8888)
+    val bitmap = obtainReusableCaptureBitmap(bitmapWidthPx, bitmapHeightPx) ?: return false
 
     isPixelCopyInFlight = true
     return try {
@@ -418,6 +431,22 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
       isPixelCopyInFlight = false
       Log.w(logTag, "PixelCopy request failed with IllegalArgumentException")
       false
+    }
+  }
+
+  private fun obtainReusableCaptureBitmap(width: Int, height: Int): Bitmap? {
+    val currentBitmap = reusableCaptureBitmap
+    if (currentBitmap != null && currentBitmap.width == width && currentBitmap.height == height && !currentBitmap.isRecycled) {
+      return currentBitmap
+    }
+
+    return try {
+      Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
+        reusableCaptureBitmap = it
+      }
+    } catch (_: OutOfMemoryError) {
+      reusableCaptureBitmap = null
+      null
     }
   }
 

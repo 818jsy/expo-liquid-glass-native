@@ -67,14 +67,16 @@ No manual native code configuration needed! 🎉
 
 For new code, prefer using `ExpoLiquidGlassNativeView` directly. It renders the glass surface natively and places React Native `children` as overlay content above it. `useRealtimeCapture` is enabled by default.
 
-Default preset:
+Current default preset:
 - `tint="#FFFFFF"`
 - `surfaceColor="#14FFFFFF"`
-- `blurRadius={1}`
-- `lensX={28}`
-- `lensY={28}`
+- `blurRadius={4}`
+- `lensX={50}`
+- `lensY={50}`
 - `cornerRadius={28}`
 - `useRealtimeCapture={true}`
+
+The example below passes the current default preset explicitly so you can see the effective values at a glance:
 
 ```tsx
 import { ExpoLiquidGlassNativeView } from 'expo-liquid-glass-native';
@@ -83,6 +85,13 @@ import { Text, View } from 'react-native';
 function MyGlassCard() {
   return (
     <ExpoLiquidGlassNativeView
+      tint="#FFFFFF"
+      surfaceColor="#14FFFFFF"
+      blurRadius={4}
+      lensX={50}
+      lensY={50}
+      cornerRadius={28}
+      useRealtimeCapture={true}
       style={{ width: 240, padding: 20, borderRadius: 28 }}
     >
       <View>
@@ -97,9 +106,9 @@ function MyGlassCard() {
 **Props:**
  - `tint?: string` - Tint color in hex format. Default: `"#FFFFFF"`
  - `surfaceColor?: string` - Surface color in hex format with alpha. Default: `"#14FFFFFF"`
- - `blurRadius?: number` - Blur radius in dp. Default: `1`
- - `lensX?: number` - Lens X radius in dp. Default: `28`
- - `lensY?: number` - Lens Y radius in dp. Default: `28`
+ - `blurRadius?: number` - Blur radius in dp. Default: `4`
+ - `lensX?: number` - Lens X radius in dp. Default: `50`
+ - `lensY?: number` - Lens Y radius in dp. Default: `50`
  - `cornerRadius?: number` - Corner radius in dp. Default: `28`
 - `imageUri?: string` - URI of the background image (deprecated, use `backgroundImageUri` instead)
 - `backgroundImageUri?: string` - URI of the background image for this specific button

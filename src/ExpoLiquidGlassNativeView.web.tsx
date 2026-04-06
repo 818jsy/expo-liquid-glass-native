@@ -9,7 +9,7 @@ export default function ExpoLiquidGlassNativeView(props: ExpoLiquidGlassNativeVi
     style,
     tint = '#FFFFFF',
     surfaceColor = '#14FFFFFF',
-    blurRadius = 1,
+    blurRadius = 4,
     cornerRadius = 28,
     ...rest
   } = props;

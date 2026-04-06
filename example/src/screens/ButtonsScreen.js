@@ -37,8 +37,6 @@ const ButtonsScreen = () => {
         <LiquidButton
           title="Wallpaper Background"
           enabled={true}
-          useRealtimeCapture={true}
-          tint="transparent"
           onPress={() => {
             console.log('Wallpaper button pressed!');
           }}
@@ -47,8 +45,6 @@ const ButtonsScreen = () => {
         <LiquidButton
           title="Apple Background"
           enabled={true}
-          useRealtimeCapture={true}
-          surfaceColor="#00FFFFFF"
           onPress={() => {
             console.log('Apple button pressed!');
           }}
@@ -57,9 +53,6 @@ const ButtonsScreen = () => {
         <LiquidButton
           title="Icon Background"
           enabled={true}
-          useRealtimeCapture={true}
-          tint="#0088FF"
-          surfaceColor="#00FFFFFF"
           onPress={() => {
             console.log('Icon button pressed!');
           }}
@@ -68,9 +61,6 @@ const ButtonsScreen = () => {
         <LiquidButton
           title="Splash Background"
           enabled={true}
-          useRealtimeCapture={true}
-          tint="#FF8D28"
-          surfaceColor="#00FFFFFF"
           onPress={() => {
             console.log('Splash button pressed!');
           }}
@@ -81,9 +71,6 @@ const ButtonsScreen = () => {
         <LiquidButton
           title="Adaptive Icon Background"
           enabled={true}
-          useRealtimeCapture={true}
-          tint="#00FF88"
-          surfaceColor="#00FFFFFF"
           onPress={() => {
             console.log('Adaptive icon button pressed!');
           }}
@@ -143,5 +130,4 @@ const styles = StyleSheet.create({
 });
 
 export default ButtonsScreen;
-
 

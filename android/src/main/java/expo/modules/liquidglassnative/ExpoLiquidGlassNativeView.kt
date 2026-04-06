@@ -20,7 +20,6 @@ import android.widget.PopupWindow
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactRootView
 import com.facebook.react.interfaces.fabric.ReactSurface
-import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
@@ -531,7 +530,10 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
     val activity = (appContext.reactContext as? ReactContext)?.currentActivity ?: return
     val reactApplication = activity.application as? ReactApplication ?: return
 
-    if (!ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture()) {
+    val currentReactContext = appContext.reactContext as? ReactContext
+    val useBridgelessOverlayHost = currentReactContext?.isBridgeless == true
+
+    if (!useBridgelessOverlayHost) {
       val reactNativeHost = reactApplication.reactNativeHost
       val reactInstanceManager = reactNativeHost.reactInstanceManager
       val currentRootView = overlayRootView

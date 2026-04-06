@@ -112,6 +112,8 @@ function MyGlassCard() {
 
 **Note:** When `useRealtimeCapture` is enabled, the component captures the screen content behind it in real time. Overlay `children` are excluded from the blurred backdrop so foreground content stays sharp.
 
+**Experimental Android realtime overlay path:** On Android, the realtime capture path currently renders visible overlay content through a separate overlay root/window so the backdrop can be captured without including the component itself or its `children`. This improves backdrop fidelity, but it also means overlay `children` do not behave exactly like normal inline React Native descendants in every case. Test touch handling, accessibility, clipping, stacking, and context-sensitive UI carefully before shipping to production.
+
 ### BottomTabs
 
 ```tsx
@@ -203,6 +205,7 @@ Check out the [example](./example) directory for complete usage examples, includ
 - iOS support is planned for future releases
 - Realtime capture may have slight performance impact on lower-end devices
 - Some complex Android view hierarchies may not capture exactly as expected
+- The Android realtime overlay path is currently experimental and may differ from standard inline `children` behavior in some edge cases
 
 ## License
 

@@ -19,4 +19,10 @@ export type ExpoLiquidGlassNativeViewProps = ViewProps & {
   backgroundImageUri?: string;
   useRealtimeCapture?: boolean;
   renderBackgroundContent?: boolean;
+  renderInSeparateWindow?: boolean;
+  overlayId?: string;
+  captureRectX?: number;
+  captureRectY?: number;
+  captureRectWidth?: number;
+  captureRectHeight?: number;
 };

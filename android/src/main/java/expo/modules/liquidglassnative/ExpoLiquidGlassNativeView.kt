@@ -52,7 +52,7 @@ private const val REALTIME_CAPTURE_SCALE = 0.5f
 
 private data class GlassProps(
   val tint: Color = Color(0xFFFFFFFF),
-  val surfaceColor: Color = Color(0x14FFFFFF),
+  val surfaceColor: Color = Color.Unspecified,
   val blurRadius: Float = 4f,
   val lensX: Float = 50f,
   val lensY: Float = 50f,

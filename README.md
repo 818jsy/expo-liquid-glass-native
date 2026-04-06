@@ -10,6 +10,7 @@ In the current implementation, `ExpoLiquidGlassNativeView` is the primary compon
 
 <div align="center">
   <img src="assets/demo.gif" width="150" alt="Demo" />
+  <img src="assets/overlay-demo.gif" width="150" alt="Overlay Demo" />
 </div>
 
 ## Installation
@@ -69,14 +70,15 @@ For new code, prefer using `ExpoLiquidGlassNativeView` directly. It renders the 
 
 Current default preset:
 - `tint="#FFFFFF"`
-- `surfaceColor="#14FFFFFF"`
 - `blurRadius={4}`
 - `lensX={50}`
 - `lensY={50}`
 - `cornerRadius={28}`
 - `useRealtimeCapture={true}`
 
-The example below passes the current default preset explicitly so you can see the effective values at a glance:
+`surfaceColor` is optional. Add it only if you want an extra translucent surface layer on top of the tint-driven glass.
+
+The example below shows the default preset and an explicit optional `surfaceColor`:
 
 ```tsx
 import { ExpoLiquidGlassNativeView } from 'expo-liquid-glass-native';
@@ -105,7 +107,7 @@ function MyGlassCard() {
 
 **Props:**
  - `tint?: string` - Tint color in hex format. Default: `"#FFFFFF"`
- - `surfaceColor?: string` - Surface color in hex format with alpha. Default: `"#14FFFFFF"`
+ - `surfaceColor?: string` - Optional surface color in hex format with alpha. Omit it to render only the tint-driven glass layer.
  - `blurRadius?: number` - Blur radius in dp. Default: `4`
  - `lensX?: number` - Lens X radius in dp. Default: `50`
  - `lensY?: number` - Lens Y radius in dp. Default: `50`

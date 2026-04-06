@@ -61,54 +61,52 @@ No manual native code configuration needed! 🎉
 
 ## Usage
 
-### LiquidButton
+### ExpoLiquidGlassNativeView
 
-#### Basic Usage
+#### Basic Usage with React Native Children
 
 ```tsx
-import { LiquidButtonView } from 'expo-liquid-glass-native';
+import { ExpoLiquidGlassNativeView } from 'expo-liquid-glass-native';
+import { Text, View } from 'react-native';
 
 function MyComponent() {
   return (
-    <LiquidButtonView
-      title="Button"
-      enabled={true}
-      tint="#0088FF"
-      surfaceColor="#FFFFFF4D"
-      blurRadius={2}
-      onPress={() => {
-        console.log('Button pressed!');
-      }}
-      style={{ width: 200, height: 50 }}
-    />
+    <ExpoLiquidGlassNativeView
+      tint="#FFFFFF"
+      surfaceColor="#14FFFFFF"
+      blurRadius={10}
+      cornerRadius={24}
+      style={{ width: 240, height: 96 }}
+    >
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <Text>Liquid Glass ✨</Text>
+      </View>
+    </ExpoLiquidGlassNativeView>
   );
 }
 ```
 
 #### With Realtime Background Capture
 
-The `useRealtimeCapture` prop allows the button to capture the screen content behind it in real-time, creating a beautiful glassmorphism effect that reflects the actual background:
+The `useRealtimeCapture` prop allows the container to capture the screen content behind it in real-time, while your React Native children render above the glass layer:
 
 ```tsx
-import { LiquidButtonView } from 'expo-liquid-glass-native';
-import { ScrollView, ImageBackground } from 'react-native';
+import { ExpoLiquidGlassNativeView } from 'expo-liquid-glass-native';
+import { ScrollView, ImageBackground, Text, View } from 'react-native';
 
 function MyComponent() {
   return (
     <ScrollView>
       <ImageBackground source={require('./assets/wallpaper.jpg')}>
-        <LiquidButtonView
-          title="Glass Button"
-          enabled={true}
+        <ExpoLiquidGlassNativeView
           useRealtimeCapture={true}
-          tint="transparent"
-          surfaceColor="#00FFFFFF"
-          blurRadius={2}
-          onPress={() => {
-            console.log('Button pressed!');
-          }}
-          style={{ width: 200, height: 50 }}
-        />
+          cornerRadius={28}
+          style={{ width: 240, height: 96 }}
+        >
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <Text>Dynamic children</Text>
+          </View>
+        </ExpoLiquidGlassNativeView>
       </ImageBackground>
     </ScrollView>
   );
@@ -116,21 +114,20 @@ function MyComponent() {
 ```
 
 **Props:**
-- `title?: string` - Button text
-- `enabled?: boolean` - Whether the button is enabled (default: true)
 - `tint?: string` - Tint color in hex format (e.g., "#0088FF" or "transparent")
 - `surfaceColor?: string` - Surface color in hex format with alpha (e.g., "#FFFFFF4D" or "#00FFFFFF" for transparent)
-- `blurRadius?: number` - Blur radius in dp (default: 2)
-- `lensX?: number` - Lens X radius in dp (default: 12)
+- `blurRadius?: number` - Blur radius in dp (default: 8)
+- `lensX?: number` - Lens X radius in dp (default: 24)
 - `lensY?: number` - Lens Y radius in dp (default: 24)
+- `cornerRadius?: number` - Corner radius in dp (default: 24)
 - `imageUri?: string` - URI of the background image (deprecated, use `backgroundImageUri` instead)
-- `backgroundImageUri?: string` - URI of the background image for this specific button
-- `useRealtimeCapture?: boolean` - Use realtime screen capture instead of image. Captures the entire screen behind the button (default: false)
+- `backgroundImageUri?: string` - URI of the background image for this specific container
+- `useRealtimeCapture?: boolean` - Use realtime screen capture instead of image. Captures the entire screen behind the container (default: false)
 - `renderBackgroundContent?: boolean` - Render background content in Compose (default: false)
-- `onPress?: (event: { nativeEvent: {} }) => void` - Press event handler
+- `children?: React.ReactNode` - React Native children rendered above the glass layer
 - `style?: ViewStyle` - Style object
 
-**Note:** When `useRealtimeCapture` is enabled, the button captures the entire screen (DecorView) behind it, making it perfect for use with ScrollViews and other scrollable containers. The capture happens at 60fps for smooth animations.
+**Note:** When `useRealtimeCapture` is enabled, the container captures the entire screen (DecorView) behind it, excluding its own React Native subtree. The capture happens at 60fps for smooth animations.
 
 ### BottomTabs
 

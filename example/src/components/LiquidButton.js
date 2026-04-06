@@ -1,50 +1,23 @@
 import React from 'react';
-import { LiquidButtonView } from 'expo-liquid-glass-native';
+import { ExpoLiquidGlassNativeView } from 'expo-liquid-glass-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-/**
- * LiquidButton component that wraps the native Android LiquidGlass button
- * 
- * @param {Object} props
- * @param {string} props.title - Button text
- * @param {boolean} props.enabled - Whether the button is enabled
- * @param {Function} props.onPress - Callback function when button is pressed
- * @param {string} props.tint - Tint color in hex format (e.g., "#0088FF")
- * @param {string} props.surfaceColor - Surface color in hex format with alpha (e.g., "#FFFFFF4D")
- * @param {number} props.blurRadius - Blur radius in dp (default: 2)
- * @param {number} props.lensX - Lens X radius in dp (default: 12)
- * @param {number} props.lensY - Lens Y radius in dp (default: 24)
- * @param {string} props.imageUri - URI of the background image (optional, deprecated - use backgroundImageUri)
- * @param {string} props.backgroundImageUri - URI of the background image for this specific button (optional)
- * @param {boolean} props.useRealtimeCapture - Use realtime screen capture instead of image (default: false)
- * @param {boolean} props.renderBackgroundContent - Render background content in Compose (default: false)
- * @param {Object} props.style - Style object for the button
- */
 const LiquidButton = ({ 
-  title = 'Button', 
-  enabled = true, 
-  onPress, 
+  title = 'Button',
   tint,
   surfaceColor,
-  blurRadius = 2,
-  lensX = 12,
+  blurRadius = 8,
+  lensX = 24,
   lensY = 24,
   imageUri,
   backgroundImageUri,
   useRealtimeCapture = false,
   renderBackgroundContent = false,
-  style, 
-  ...props 
+  style,
+  ...props
 }) => {
-  const handlePress = (event) => {
-    if (onPress) {
-      onPress(event);
-    }
-  };
-
   return (
-    <LiquidButtonView
-      title={title}
-      enabled={enabled}
+    <ExpoLiquidGlassNativeView
       tint={tint}
       surfaceColor={surfaceColor}
       blurRadius={blurRadius}
@@ -54,12 +27,27 @@ const LiquidButton = ({
       backgroundImageUri={backgroundImageUri}
       useRealtimeCapture={useRealtimeCapture}
       renderBackgroundContent={renderBackgroundContent}
-      onPress={handlePress}
       style={style}
       {...props}
-    />
+    >
+      <View style={styles.content}>
+        <Text style={styles.label}>{title}</Text>
+      </View>
+    </ExpoLiquidGlassNativeView>
   );
 };
 
-export default LiquidButton;
+const styles = StyleSheet.create({
+  content: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  label: {
+    color: '#111',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
 
+export default LiquidButton;

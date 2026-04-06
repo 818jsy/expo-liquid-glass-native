@@ -1,38 +1,84 @@
 import ExpoModulesCore
-import WebKit
+import UIKit
 
-// This view will be used as a native component. Make sure to inherit from `ExpoView`
-// to apply the proper styling (e.g. border radius and shadows).
 class ExpoLiquidGlassNativeView: ExpoView {
-  let webView = WKWebView()
-  let onLoad = EventDispatcher()
-  var delegate: WebViewDelegate?
+  private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
+  private let tintView = UIView()
+  private let surfaceView = UIView()
 
   required init(appContext: AppContext? = nil) {
     super.init(appContext: appContext)
     clipsToBounds = true
-    delegate = WebViewDelegate { url in
-      self.onLoad(["url": url])
-    }
-    webView.navigationDelegate = delegate
-    addSubview(webView)
+
+    blurView.isUserInteractionEnabled = false
+    tintView.isUserInteractionEnabled = false
+    surfaceView.isUserInteractionEnabled = false
+
+    addSubview(blurView)
+    addSubview(tintView)
+    addSubview(surfaceView)
   }
 
   override func layoutSubviews() {
-    webView.frame = bounds
+    super.layoutSubviews()
+    blurView.frame = bounds
+    tintView.frame = bounds
+    surfaceView.frame = bounds
+    sendSubviewToBack(surfaceView)
+    sendSubviewToBack(tintView)
+    sendSubviewToBack(blurView)
+  }
+
+  func applyTint(_ value: String?) {
+    tintView.backgroundColor = UIColor.fromHex(value)?.withAlphaComponent(0.18)
+  }
+
+  func applySurfaceColor(_ value: String?) {
+    surfaceView.backgroundColor = UIColor.fromHex(value) ?? UIColor.white.withAlphaComponent(0.16)
+  }
+
+  func applyCornerRadius(_ value: Double?) {
+    layer.cornerRadius = CGFloat(value ?? 24)
   }
 }
 
-class WebViewDelegate: NSObject, WKNavigationDelegate {
-  let onUrlChange: (String) -> Void
+private extension UIColor {
+  static func fromHex(_ value: String?) -> UIColor? {
+    guard let value else {
+      return nil
+    }
 
-  init(onUrlChange: @escaping (String) -> Void) {
-    self.onUrlChange = onUrlChange
-  }
+    var input = value.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+    if input == "TRANSPARENT" {
+      return .clear
+    }
+    if input.hasPrefix("#") {
+      input.removeFirst()
+    }
 
-  func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {
-    if let url = webView.url {
-      onUrlChange(url.absoluteString)
+    let scanner = Scanner(string: input)
+    var hexNumber: UInt64 = 0
+    guard scanner.scanHexInt64(&hexNumber) else {
+      return nil
+    }
+
+    switch input.count {
+    case 6:
+      return UIColor(
+        red: CGFloat((hexNumber & 0xFF0000) >> 16) / 255,
+        green: CGFloat((hexNumber & 0x00FF00) >> 8) / 255,
+        blue: CGFloat(hexNumber & 0x0000FF) / 255,
+        alpha: 1
+      )
+    case 8:
+      return UIColor(
+        red: CGFloat((hexNumber & 0xFF000000) >> 24) / 255,
+        green: CGFloat((hexNumber & 0x00FF0000) >> 16) / 255,
+        blue: CGFloat((hexNumber & 0x0000FF00) >> 8) / 255,
+        alpha: CGFloat(hexNumber & 0x000000FF) / 255
+      )
+    default:
+      return nil
     }
   }
 }

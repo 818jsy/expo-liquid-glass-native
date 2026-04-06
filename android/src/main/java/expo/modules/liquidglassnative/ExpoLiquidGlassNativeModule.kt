@@ -10,10 +10,8 @@ import expo.modules.kotlin.modules.ModuleDefinition
 import expo.modules.kotlin.Promise
 import java.io.File
 import java.io.FileOutputStream
-import java.net.URL
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerModule
-import com.facebook.react.uimanager.UIManagerHelper
 
 class ExpoLiquidGlassNativeModule : Module() {
   override fun definition() = ModuleDefinition {
@@ -123,50 +121,37 @@ class ExpoLiquidGlassNativeModule : Module() {
     // Enables the module to be used as a native view. Definition components that are accepted as part of
     // the view definition: Prop, Events.
     View(ExpoLiquidGlassNativeView::class) {
-      // Defines a setter for the `url` prop.
-      Prop("url") { view: ExpoLiquidGlassNativeView, url: URL ->
-        view.webView.loadUrl(url.toString())
-      }
-      // Defines an event that the view can send to JavaScript.
-      Events("onLoad")
-    }
-
-    // LiquidButton View
-    View(LiquidButtonView::class) {
-      Prop("title") { view: LiquidButtonView, title: String? ->
-        view.updateProps(title = title)
-      }
-      Prop("enabled") { view: LiquidButtonView, enabled: Boolean ->
-        view.updateProps(enabled = enabled)
-      }
-      Prop("tint") { view: LiquidButtonView, tint: String? ->
+      Prop("tint") { view: ExpoLiquidGlassNativeView, tint: String? ->
         view.updateProps(tint = tint)
       }
-      Prop("surfaceColor") { view: LiquidButtonView, surfaceColor: String? ->
+      Prop("surfaceColor") { view: ExpoLiquidGlassNativeView, surfaceColor: String? ->
         view.updateProps(surfaceColor = surfaceColor)
       }
-      Prop("blurRadius") { view: LiquidButtonView, blurRadius: Double ->
+      Prop("blurRadius") { view: ExpoLiquidGlassNativeView, blurRadius: Double ->
         view.updateProps(blurRadius = blurRadius.toFloat())
       }
-      Prop("lensX") { view: LiquidButtonView, lensX: Double ->
+      Prop("lensX") { view: ExpoLiquidGlassNativeView, lensX: Double ->
         view.updateProps(lensX = lensX.toFloat())
       }
-      Prop("lensY") { view: LiquidButtonView, lensY: Double ->
+      Prop("lensY") { view: ExpoLiquidGlassNativeView, lensY: Double ->
         view.updateProps(lensY = lensY.toFloat())
       }
-      Prop("imageUri") { view: LiquidButtonView, imageUri: String? ->
+      Prop("cornerRadius") { view: ExpoLiquidGlassNativeView, cornerRadius: Double ->
+        view.updateProps(cornerRadius = cornerRadius.toFloat())
+      }
+      Prop("imageUri") { view: ExpoLiquidGlassNativeView, imageUri: String? ->
         view.updateProps(imageUri = imageUri)
       }
-      Prop("backgroundImageUri") { view: LiquidButtonView, backgroundImageUri: String? ->
+      Prop("backgroundImageUri") { view: ExpoLiquidGlassNativeView, backgroundImageUri: String? ->
         view.updateProps(backgroundImageUri = backgroundImageUri)
       }
-      Prop("useRealtimeCapture") { view: LiquidButtonView, useRealtimeCapture: Boolean ->
+      Prop("useRealtimeCapture") { view: ExpoLiquidGlassNativeView, useRealtimeCapture: Boolean ->
         view.updateProps(useRealtimeCapture = useRealtimeCapture)
       }
-      Prop("renderBackgroundContent") { view: LiquidButtonView, renderBackgroundContent: Boolean ->
+      Prop("renderBackgroundContent") { view: ExpoLiquidGlassNativeView, renderBackgroundContent: Boolean ->
         view.updateProps(renderBackgroundContent = renderBackgroundContent)
       }
-      Events("onPress")
+
     }
 
     // BottomTabsContentView

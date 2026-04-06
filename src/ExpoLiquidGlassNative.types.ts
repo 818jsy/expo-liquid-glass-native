@@ -1,8 +1,4 @@
-import type { StyleProp, ViewStyle } from 'react-native';
-
-export type OnLoadEventPayload = {
-  url: string;
-};
+import type { ViewProps } from 'react-native';
 
 export type ExpoLiquidGlassNativeModuleEvents = {
   onChange: (params: ChangeEventPayload) => void;
@@ -12,8 +8,15 @@ export type ChangeEventPayload = {
   value: string;
 };
 
-export type ExpoLiquidGlassNativeViewProps = {
-  url: string;
-  onLoad: (event: { nativeEvent: OnLoadEventPayload }) => void;
-  style?: StyleProp<ViewStyle>;
+export type ExpoLiquidGlassNativeViewProps = ViewProps & {
+  tint?: string;
+  surfaceColor?: string;
+  blurRadius?: number;
+  lensX?: number;
+  lensY?: number;
+  cornerRadius?: number;
+  imageUri?: string;
+  backgroundImageUri?: string;
+  useRealtimeCapture?: boolean;
+  renderBackgroundContent?: boolean;
 };

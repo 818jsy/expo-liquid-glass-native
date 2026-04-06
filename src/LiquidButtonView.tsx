@@ -1,24 +1,11 @@
 import * as React from 'react';
-import { requireNativeComponent, ViewProps } from 'react-native';
 
-export type LiquidButtonViewProps = ViewProps & {
-  title?: string;
-  enabled?: boolean;
-  onPress?: (event: { nativeEvent: {} }) => void;
-  tint?: string;
-  surfaceColor?: string;
-  blurRadius?: number;
-  lensX?: number;
-  lensY?: number;
-  imageUri?: string;
-  backgroundImageUri?: string;
-  useRealtimeCapture?: boolean;
-  renderBackgroundContent?: boolean;
-};
+import ExpoLiquidGlassNativeView from './ExpoLiquidGlassNativeView';
+import type { ExpoLiquidGlassNativeViewProps } from './ExpoLiquidGlassNative.types';
 
-const NativeLiquidButtonView = requireNativeComponent<LiquidButtonViewProps>('LiquidButtonView');
+export type LiquidButtonViewProps = ExpoLiquidGlassNativeViewProps;
 
+// Backward-compatible alias. Prefer ExpoLiquidGlassNativeView for new code.
 export default function LiquidButtonView(props: LiquidButtonViewProps) {
-  return <NativeLiquidButtonView {...props} />;
+  return <ExpoLiquidGlassNativeView {...props} />;
 }
-

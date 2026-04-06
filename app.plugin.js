@@ -4,7 +4,7 @@ const path = require('path');
 
 /**
  * Expo config plugin for expo-liquid-glass-native
- * Automatically configures Compose plugin and dependencies
+ * Automatically configures Compose plugin and dependencies for Expo Modules.
  */
 const withExpoLiquidGlassNative = (config) => {
   return withDangerousMod(config, [
@@ -80,80 +80,6 @@ const withExpoLiquidGlassNative = (config) => {
         }
         
         fs.writeFileSync(settingsGradlePath, settingsGradle);
-      }
-      
-      // Configure MainApplication.kt - Add LiquidButtonPackage registration
-      // Dynamically find MainApplication.kt by searching for it
-      const findMainApplication = (dir) => {
-        const files = fs.readdirSync(dir, { withFileTypes: true });
-        for (const file of files) {
-          const fullPath = path.join(dir, file.name);
-          if (file.isDirectory()) {
-            const found = findMainApplication(fullPath);
-            if (found) return found;
-          } else if (file.name === 'MainApplication.kt') {
-            return fullPath;
-          }
-        }
-        return null;
-      };
-      
-      const javaSrcPath = path.join(projectRoot, 'app', 'src', 'main', 'java');
-      const mainApplicationPath = fs.existsSync(javaSrcPath) ? findMainApplication(javaSrcPath) : null;
-      
-      if (mainApplicationPath && fs.existsSync(mainApplicationPath)) {
-        let mainApplication = fs.readFileSync(mainApplicationPath, 'utf8');
-        
-        // Check if LiquidButtonPackage is already added
-        if (!mainApplication.includes('expo.modules.liquidglassnative.LiquidButtonPackage')) {
-          // Find the getPackages function and add the package
-          const packagesMatch = mainApplication.match(/getPackages\(\):\s*List<ReactPackage>\s*=\s*PackageList\(this\)\.packages\.apply\s*\{/);
-          if (packagesMatch) {
-            const insertIndex = packagesMatch.index + packagesMatch[0].length;
-            // Find the closing brace of the apply block
-            let braceCount = 1;
-            let currentIndex = insertIndex;
-            let closingBraceIndex = -1;
-            
-            while (currentIndex < mainApplication.length && braceCount > 0) {
-              if (mainApplication[currentIndex] === '{') braceCount++;
-              if (mainApplication[currentIndex] === '}') {
-                braceCount--;
-                if (braceCount === 0) {
-                  closingBraceIndex = currentIndex;
-                  break;
-                }
-              }
-              currentIndex++;
-            }
-            
-            if (closingBraceIndex !== -1) {
-              // Check if there's already a comment or add statement
-              const beforeClosing = mainApplication.slice(insertIndex, closingBraceIndex);
-              const packageAddStatement = `\n              add(expo.modules.liquidglassnative.LiquidButtonPackage())\n`;
-              
-              // Find the last add statement or comment before closing brace
-              const lastAddMatch = beforeClosing.match(/(add\([^)]+\)|\/\/[^\n]*)/g);
-              if (lastAddMatch) {
-                const lastAdd = lastAddMatch[lastAddMatch.length - 1];
-                const lastAddIndex = beforeClosing.lastIndexOf(lastAdd);
-                const insertPos = insertIndex + lastAddIndex + lastAdd.length;
-                mainApplication = 
-                  mainApplication.slice(0, insertPos) +
-                  packageAddStatement +
-                  mainApplication.slice(insertPos);
-              } else {
-                // Insert after the opening brace
-                mainApplication = 
-                  mainApplication.slice(0, insertIndex) +
-                  packageAddStatement +
-                  mainApplication.slice(insertIndex);
-              }
-              
-              fs.writeFileSync(mainApplicationPath, mainApplication);
-            }
-          }
-        }
       }
       
       // Configure app/build.gradle - Add Compose plugin and dependencies
@@ -264,4 +190,3 @@ kotlin {
 };
 
 module.exports = withExpoLiquidGlassNative;
-

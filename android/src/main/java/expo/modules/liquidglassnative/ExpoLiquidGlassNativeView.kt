@@ -18,7 +18,9 @@ import android.view.PixelCopy
 import android.widget.FrameLayout
 import android.widget.PopupWindow
 import com.facebook.react.ReactApplication
+import com.facebook.react.ReactRootView
 import com.facebook.react.interfaces.fabric.ReactSurface
+import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
@@ -75,6 +77,7 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
   private var popupWindow: PopupWindow? = null
   private var popupContainer: FrameLayout? = null
   private var overlaySurface: ReactSurface? = null
+  private var overlayRootView: ReactRootView? = null
 
   private val realtimeCaptureFrameRunnable = object : Runnable {
     override fun run() {
@@ -493,6 +496,8 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
   }
 
   private fun dismissPopupWindow() {
+    overlayRootView?.unmountReactApplication()
+    overlayRootView = null
     overlaySurface?.stop()
     overlaySurface?.detach()
     overlaySurface = null
@@ -509,6 +514,11 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
   private fun updateOverlaySurface(container: FrameLayout) {
     val overlayId = props.overlayId
     if (overlayId.isNullOrBlank()) {
+      overlayRootView?.let { view ->
+        container.removeView(view)
+      }
+      overlayRootView?.unmountReactApplication()
+      overlayRootView = null
       overlaySurface?.view?.let { view ->
         container.removeView(view)
       }
@@ -520,6 +530,52 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
 
     val activity = (appContext.reactContext as? ReactContext)?.currentActivity ?: return
     val reactApplication = activity.application as? ReactApplication ?: return
+
+    if (!ReactNativeNewArchitectureFeatureFlags.enableBridgelessArchitecture()) {
+      val reactNativeHost = reactApplication.reactNativeHost
+      val reactInstanceManager = reactNativeHost.reactInstanceManager
+      val currentRootView = overlayRootView
+      if (currentRootView == null) {
+        val newRootView = ReactRootView(context).apply {
+          isClickable = false
+          isFocusable = false
+          setIsFabric(false)
+          startReactApplication(
+            reactInstanceManager,
+            "ExpoLiquidGlassNativeOverlayHost",
+            Bundle().apply {
+              putString("overlayId", overlayId)
+            }
+          )
+        }
+        overlayRootView = newRootView
+        container.addView(
+          newRootView,
+          FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT
+          )
+        )
+      } else if (currentRootView.parent !== container) {
+        (currentRootView.parent as? ViewGroup)?.removeView(currentRootView)
+        container.addView(
+          currentRootView,
+          FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT
+          )
+        )
+      }
+
+      overlaySurface?.view?.let { view ->
+        container.removeView(view)
+      }
+      overlaySurface?.stop()
+      overlaySurface?.detach()
+      overlaySurface = null
+      return
+    }
+
     val reactHost = reactApplication.reactHost ?: return
 
     val currentSurface = overlaySurface

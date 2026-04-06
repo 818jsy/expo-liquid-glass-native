@@ -1,4 +1,9 @@
-const { withDangerousMod } = require('@expo/config-plugins');
+const configPlugins = require(
+  require.resolve('@expo/config-plugins', {
+    paths: [__dirname, process.cwd()],
+  })
+);
+const { withDangerousMod } = configPlugins;
 const fs = require('fs');
 const path = require('path');
 

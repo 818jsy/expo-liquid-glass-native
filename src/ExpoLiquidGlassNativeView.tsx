@@ -3,6 +3,7 @@ import { requireNativeViewManager } from 'expo-modules-core';
 import { Platform, StyleSheet, View } from 'react-native';
 
 import { ExpoLiquidGlassNativeViewProps } from './ExpoLiquidGlassNative.types';
+import { ensureOverlayHostRegistered } from './overlayHostRegistration';
 import { clearOverlayContent, setOverlayContent } from './overlayRegistry';
 
 const NativeView: React.ComponentType<ExpoLiquidGlassNativeViewProps> =
@@ -33,6 +34,7 @@ export default function ExpoLiquidGlassNativeView(props: ExpoLiquidGlassNativeVi
       return;
     }
 
+    ensureOverlayHostRegistered();
     setOverlayContent(overlayIdRef.current, children);
     return () => {
       clearOverlayContent(overlayIdRef.current);

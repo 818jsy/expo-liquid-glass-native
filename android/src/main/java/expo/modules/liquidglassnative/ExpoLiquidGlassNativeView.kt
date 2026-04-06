@@ -433,21 +433,6 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
     val popup = ensurePopupWindow()
     val container = popupContainer ?: return
 
-    composeView.setParentCompositionContext(findViewTreeCompositionContext())
-
-    if (composeView.parent !== container) {
-      (composeView.parent as? ViewGroup)?.removeView(composeView)
-      container.addView(
-        composeView,
-        FrameLayout.LayoutParams(
-          FrameLayout.LayoutParams.MATCH_PARENT,
-          FrameLayout.LayoutParams.MATCH_PARENT
-        )
-      )
-    }
-
-    updateOverlaySurface(container)
-
     val density = resources.displayMetrics.density
     val popupX = props.captureRectX?.let { (it * density).toInt() } ?: 0
     val popupY = props.captureRectY?.let { (it * density).toInt() } ?: 0
@@ -464,7 +449,15 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
       popup.update(popupX, popupY, popupWidth, popupHeight)
     }
 
-    composeView.visibility = View.VISIBLE
+    container.post {
+      if (popupContainer !== container || popupWindow !== popup || !popup.isShowing) {
+        return@post
+      }
+
+      installPopupOwnersForVisibleHierarchy(container)
+      attachPopupContent(container)
+      composeView.visibility = View.VISIBLE
+    }
   }
 
   private fun ensurePopupWindow(): PopupWindow {
@@ -568,6 +561,39 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
           )
         )
       }
+    }
+  }
+
+  private fun attachPopupContent(container: FrameLayout) {
+    composeView.setParentCompositionContext(findViewTreeCompositionContext())
+
+    if (composeView.parent !== container) {
+      (composeView.parent as? ViewGroup)?.removeView(composeView)
+      container.addView(
+        composeView,
+        FrameLayout.LayoutParams(
+          FrameLayout.LayoutParams.MATCH_PARENT,
+          FrameLayout.LayoutParams.MATCH_PARENT
+        )
+      )
+    }
+
+    updateOverlaySurface(container)
+  }
+
+  private fun installPopupOwnersForVisibleHierarchy(container: FrameLayout) {
+    val activity = (appContext.reactContext as? ReactContext)?.currentActivity ?: return
+
+    installPopupOwners(container, activity)
+    installPopupOwners(composeView, activity)
+
+    overlaySurface?.view?.let { overlayView ->
+      installPopupOwners(overlayView, activity)
+    }
+
+    val popupRoot = runCatching { container.rootView }.getOrNull()
+    if (popupRoot != null && popupRoot !== container) {
+      installPopupOwners(popupRoot, activity)
     }
   }
 

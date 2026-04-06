@@ -1,3 +1,14 @@
+import { AppRegistry, Platform } from 'react-native';
+
+import ExpoLiquidGlassNativeOverlayHost from './ExpoLiquidGlassNativeOverlayHost';
+
+if (Platform.OS !== 'web') {
+  AppRegistry.registerComponent(
+    'ExpoLiquidGlassNativeOverlayHost',
+    () => ExpoLiquidGlassNativeOverlayHost
+  );
+}
+
 // Reexport the native module. On web, it will be resolved to ExpoLiquidGlassNativeModule.web.ts
 // and on native platforms to ExpoLiquidGlassNativeModule.ts
 // Note: Default export is optional - only exported if module is available

@@ -151,6 +151,24 @@ class ExpoLiquidGlassNativeModule : Module() {
       Prop("renderBackgroundContent") { view: ExpoLiquidGlassNativeView, renderBackgroundContent: Boolean ->
         view.updateProps(renderBackgroundContent = renderBackgroundContent)
       }
+      Prop("renderInSeparateWindow") { view: ExpoLiquidGlassNativeView, renderInSeparateWindow: Boolean ->
+        view.updateProps(renderInSeparateWindow = renderInSeparateWindow)
+      }
+      Prop("overlayId") { view: ExpoLiquidGlassNativeView, overlayId: String? ->
+        view.updateProps(overlayId = overlayId)
+      }
+      Prop("captureRectX") { view: ExpoLiquidGlassNativeView, captureRectX: Double? ->
+        view.updateProps(captureRectX = captureRectX?.toFloat())
+      }
+      Prop("captureRectY") { view: ExpoLiquidGlassNativeView, captureRectY: Double? ->
+        view.updateProps(captureRectY = captureRectY?.toFloat())
+      }
+      Prop("captureRectWidth") { view: ExpoLiquidGlassNativeView, captureRectWidth: Double? ->
+        view.updateProps(captureRectWidth = captureRectWidth?.toFloat())
+      }
+      Prop("captureRectHeight") { view: ExpoLiquidGlassNativeView, captureRectHeight: Double? ->
+        view.updateProps(captureRectHeight = captureRectHeight?.toFloat())
+      }
 
     }
 

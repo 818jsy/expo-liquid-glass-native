@@ -3,15 +3,49 @@ const configPlugins = require(
     paths: [__dirname, process.cwd()],
   })
 );
-const { withDangerousMod } = configPlugins;
+const { withDangerousMod, withGradleProperties } = configPlugins;
 const fs = require('fs');
 const path = require('path');
+const DEFAULT_GRADLE_JVMARGS = '-Xmx2048m -XX:MaxMetaspaceSize=512m';
+const JAVA_24_NATIVE_ACCESS_FLAG = '--enable-native-access=ALL-UNNAMED';
+
+function upsertGradleProperty(modResults, key, valueFactory) {
+  const nextProperties = modResults.filter(
+    (property) => property.type !== 'property' || property.key !== key
+  );
+  const currentProperty = modResults.find(
+    (property) => property.type === 'property' && property.key === key
+  );
+
+  nextProperties.push({
+    type: 'property',
+    key,
+    value: valueFactory(currentProperty?.value),
+  });
+
+  return nextProperties;
+}
 
 /**
  * Expo config plugin for expo-liquid-glass-native
  * Automatically configures Compose plugin and dependencies for Expo Modules.
  */
 const withExpoLiquidGlassNative = (config) => {
+  config = withGradleProperties(config, (config) => {
+    const nextProperties = config.modResults || [];
+
+    config.modResults = upsertGradleProperty(
+      nextProperties,
+      'org.gradle.jvmargs',
+      (currentValue = DEFAULT_GRADLE_JVMARGS) =>
+        currentValue.includes(JAVA_24_NATIVE_ACCESS_FLAG)
+          ? currentValue
+          : `${currentValue} ${JAVA_24_NATIVE_ACCESS_FLAG}`
+    );
+
+    return config;
+  });
+
   return withDangerousMod(config, [
     'android',
     async (config) => {

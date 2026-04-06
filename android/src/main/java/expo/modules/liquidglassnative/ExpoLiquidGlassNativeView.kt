@@ -7,12 +7,12 @@ import android.graphics.Outline
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
+import android.view.ViewTreeObserver
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -32,7 +32,6 @@ import com.kyant.backdrop.effects.vibrancy
 import com.kyant.capsule.ContinuousRoundedRectangle
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.views.ExpoView
-import kotlinx.coroutines.delay
 
 private data class GlassProps(
   val tint: Color = Color(0xFFFFFFFF),
@@ -49,18 +48,27 @@ private data class GlassProps(
 
 open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
   private var props by mutableStateOf(GlassProps())
+  private var cachedBackdropBitmap by mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null)
+  private var observedRootView: View? = null
+
+  private val realtimeCapturePreDrawListener = ViewTreeObserver.OnPreDrawListener {
+    if (!props.useRealtimeCapture) {
+      true
+    } else {
+      requestBackdropCapture()
+      true
+    }
+  }
 
   private val composeView = ComposeView(context).apply {
     layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
     isClickable = false
     isFocusable = false
     setContent {
-      val cachedBitmap = remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
-
       val backdrop = rememberLayerBackdrop(
         onDraw = {
           if (props.useRealtimeCapture) {
-            cachedBitmap.value?.let { imageBitmap ->
+            cachedBackdropBitmap?.let { imageBitmap ->
               drawContext.canvas.drawImage(
                 image = imageBitmap,
                 topLeftOffset = Offset.Zero,
@@ -75,14 +83,11 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
 
       LaunchedEffect(props.useRealtimeCapture) {
         if (!props.useRealtimeCapture) {
-          cachedBitmap.value = null
-          return@LaunchedEffect
+          cachedBackdropBitmap = null
+        } else {
+          requestBackdropCapture()
         }
-
-        while (true) {
-          cachedBitmap.value = captureBackdropBitmap()?.asImageBitmap()
-          delay(16)
-        }
+        updateRealtimeCaptureObservation()
       }
 
       val backgroundImageUri = props.backgroundImageUri ?: props.imageUri
@@ -122,6 +127,17 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
     }
   }
 
+  override fun onAttachedToWindow() {
+    super.onAttachedToWindow()
+    updateRealtimeCaptureObservation()
+    requestBackdropCapture()
+  }
+
+  override fun onDetachedFromWindow() {
+    teardownRealtimeCaptureObservation()
+    super.onDetachedFromWindow()
+  }
+
   fun updateProps(
     tint: String? = null,
     surfaceColor: String? = null,
@@ -147,6 +163,8 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
       renderBackgroundContent = renderBackgroundContent ?: props.renderBackgroundContent
     )
     updateOutline()
+    updateRealtimeCaptureObservation()
+    requestBackdropCapture()
   }
 
   private fun updateOutline() {
@@ -185,12 +203,18 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
         val offsetX = viewLocation[0] - rootLocation[0]
         val offsetY = viewLocation[1] - rootLocation[1]
         canvas.translate(-offsetX.toFloat(), -offsetY.toFloat())
-
-        rootView.background?.draw(canvas)
-        if (rootView is ViewGroup) {
-          drawViewGroupChildren(rootView, canvas, excludedViews, rootLocation)
-        } else if (rootView != this) {
+        val hiddenViews = excludedViews
+          .filter { it.alpha != 0f }
+          .associateWith { it.alpha }
+        try {
+          hiddenViews.keys.forEach { excludedView ->
+            excludedView.alpha = 0f
+          }
           rootView.draw(canvas)
+        } finally {
+          hiddenViews.forEach { (excludedView, alpha) ->
+            excludedView.alpha = alpha
+          }
         }
       } finally {
         canvas.restoreToCount(saveCount)
@@ -235,40 +259,45 @@ open class ExpoLiquidGlassNativeView(context: Context, appContext: AppContext) :
     }
   }
 
-  private fun drawViewGroupChildren(
-    parent: ViewGroup,
-    canvas: Canvas,
-    excludeViews: Set<View>,
-    parentLocation: IntArray
-  ) {
-    for (index in 0 until parent.childCount) {
-      val child = parent.getChildAt(index)
-      if (child in excludeViews || child.visibility != View.VISIBLE) {
-        continue
-      }
+  private fun updateRealtimeCaptureObservation() {
+    val reactContext = appContext.reactContext as? ReactContext
+    val activity = reactContext?.currentActivity
+    val rootView = activity?.window?.decorView
+    val shouldObserve = props.useRealtimeCapture && isAttachedToWindow && rootView != null
 
-      try {
-        val childLocation = IntArray(2)
-        child.getLocationInWindow(childLocation)
-        val childOffsetX = childLocation[0] - parentLocation[0]
-        val childOffsetY = childLocation[1] - parentLocation[1]
-
-        val saveCount = canvas.save()
-        try {
-          canvas.translate(childOffsetX.toFloat(), childOffsetY.toFloat())
-          if (child is ViewGroup) {
-            val childParentLocation = IntArray(2)
-            child.getLocationInWindow(childParentLocation)
-            drawViewGroupChildren(child, canvas, excludeViews, childParentLocation)
-          } else {
-            child.draw(canvas)
-          }
-        } finally {
-          canvas.restoreToCount(saveCount)
-        }
-      } catch (_: Exception) {
-      }
+    if (!shouldObserve) {
+      teardownRealtimeCaptureObservation()
+      return
     }
+
+    if (observedRootView === rootView) {
+      return
+    }
+
+    teardownRealtimeCaptureObservation()
+    if (rootView?.viewTreeObserver?.isAlive == true) {
+      rootView.viewTreeObserver.addOnPreDrawListener(realtimeCapturePreDrawListener)
+      observedRootView = rootView
+    }
+  }
+
+  private fun teardownRealtimeCaptureObservation() {
+    val rootView = observedRootView ?: return
+    if (rootView.viewTreeObserver.isAlive) {
+      rootView.viewTreeObserver.removeOnPreDrawListener(realtimeCapturePreDrawListener)
+    }
+    observedRootView = null
+  }
+
+  private fun requestBackdropCapture() {
+    if (!props.useRealtimeCapture || width <= 0 || height <= 0) {
+      if (!props.useRealtimeCapture) {
+        cachedBackdropBitmap = null
+      }
+      return
+    }
+
+    cachedBackdropBitmap = captureBackdropBitmap()?.asImageBitmap()
   }
 }
 
